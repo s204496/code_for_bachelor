@@ -12,5 +12,17 @@ The last plot in the file shows the global order of accuracy for both the Upwind
 
 This file shows how to solve the Riemann problem for the constant coefficient system $q_t+Aq_x=0$, where A is a 2 by 2 matrix that is diagonalizble. We get the two waves speed, and the state that is left in between the two waves. 
 
+## Directory: exact_Riemann_solver
+
+This directory contains all the files to solve the 1D Dam-break problem exactly (to machine epsilon) by using an exact Riemann solver, the code within this directory is heavily inspired by the FORTRAN implementation p. 128-140 in "Shock-Capturing Methods for Free-Surface Shallow Flows" - by Eleuterio F. Toro.
+
+### File: exact_Riemann_solver/main.py
+
+This is the main file, which take in an input file from the directory ```exact_Riemann_solver/input```. In this file the parameters specified below should be stated:
+
+#### **parameters of input file**
+1. adskfj
+2. asdflkjheavily
+
 ```sudo dnf install shit```
 
