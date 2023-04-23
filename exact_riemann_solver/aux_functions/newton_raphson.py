@@ -35,6 +35,7 @@ def newton_rapson_iter(out_file, g, h_s, h_l, h_r, u_l, u_r, a_l, a_r, tolerance
             out_file.write('\nStopped Newton-Raphson due to max iterations')
             return h_s
     out_file.write(tabulate(table) + '\n')
+    out_file.write("Number of iterations: " + str(iter) + '\n')
     return h_s
 
 """
@@ -48,7 +49,7 @@ def initial_guess(g, h_l, h_r, u_l, u_r, a_l, a_r):
     h_s = (1/g)*((1/2*(a_l+a_r)-(1/4)*(u_r-u_l))**2)
     if f.f(g, h_min, h_l, h_r, u_l, u_r) >= 0:
         # this is just to check that the definition given in book toro (5.3) and (5.4) match up with the other condition 5.18
-        if hs <= h_min: 
+        if not(h_s < h_min): 
             print("Error, Mark A: The condition given in 5.18 and (5.3-5.4) does not match up, this should not happen")
             sys.exit(1)
         return (1/g)*((1/2*(a_l+a_r)-(1/4)*(u_r-u_l))**2)
