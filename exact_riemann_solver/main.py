@@ -23,29 +23,28 @@ The input should state the following hyperparameters:
 
 # Imports
 import sys
+sys.path.append('exact_riemann_solver')
 import math
-import dry_bed
-import wet_bed
-import file_writer
+from aux_functions import dry_bed, wet_bed, sampler
 
 def print_variables(x_len, break_pos, g, cells, tolerance, iteration, t_end, h_l, u_l, h_r, u_r):
-    print('x-length: ' + x_len)
-    print('break-position: ' + break_pos)
-    print('gravity: ' + g)
-    print('cells: ' + cells)
-    print('tolerance: ' + tolerance)
-    print('iteration: ' + iteration)
-    print('t_end: ' + t_end)
-    print('h_l: ' + h_l)
-    print('u_l: ' + u_l)
-    print('h_r: ' + h_r)
-    print('u_r: ' + u_r)
+    print('x-length: ', str(x_len))
+    print('break-position: ', str(break_pos))
+    print('gravity: ', str(g))
+    print('cells: ', str(cells))
+    print('tolerance: ', str(tolerance))
+    print('iteration: ', str(iteration))
+    print('t_end: ', str(t_end))
+    print('h_l: ', str(h_l))
+    print('u_l: ', str(u_l))
+    print('h_r: ', str(h_r))
+    print('u_r: ', str(u_r))
 
 
 def main(terminal_arguments):
     #reading in values
     try:
-        read_file = open('exact_Riemann_solver/input/' + terminal_arguments[1])
+        read_file = open('exact_riemann_solver/input/' + terminal_arguments[1])
     except:
         print('Could not find input file, please remeber to execute the program from the root folder and specify the input file as first argument')
         sys.exit(1)
@@ -64,7 +63,7 @@ def main(terminal_arguments):
     #open the file writen to
     try:
         #this creates the file if it does not exist, and overwrites it if it does
-        write_file = open('exact_Riemann_solver/data/' + terminal_arguments[2], 'w')
+        out_file = open('exact_riemann_solver/data/' + terminal_arguments[2], 'w')
     except:
         print('Could not find output file, please specify the output file as second argument')
         sys.exit(1)
@@ -78,16 +77,20 @@ def main(terminal_arguments):
 
     # Dry bed case
     if (not(dpc) or h_l <= 0 or h_r <= 0):
-        print("Case: Dry bed")
-        value = dry_bed.calculate(x_len, break_pos, g, cells, tolerance, iteration, t_end, h_l, u_l, h_r, u_r)
+        out_file.write('Case: Dry bed\n')
+        value = dry_bed.calculate(out_file, x_len, break_pos, g, cells, tolerance, iteration, t_end, h_l, u_l, h_r, u_r, a_l, a_r)
         print(value)
     # Wet bed 
     else:
-        print("Case: Wet bed")
-        value = wet_bed.calculate(x_len, break_pos, g, cells, tolerance, iteration, t_end, h_l, u_l, h_r, u_r)
+        ####!!!!
+        out_file.write('Case: Wet bed\n')
+        value = wet_bed.calculate(out_file, x_len, break_pos, g, cells, tolerance, iteration, t_end, h_l, u_l, h_r, u_r, a_l, a_r)
         print(value)
+        print("wet bed")
     
-    file_writer.write_file(write_file, value)
+    sampler.sample(out_file, value)
+    print_variables(x_len, break_pos, g, cells, tolerance, iteration, t_end, h_l, u_l, h_r, u_r)
+    
 
 if __name__ == '__main__':
     main(sys.argv)

@@ -1,3 +1,5 @@
 test_not_in_git/
 __pycache__/
+/.vscode/
+/exact_riemann_solver/.vscode/
 
