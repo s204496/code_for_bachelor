@@ -26,21 +26,7 @@ import sys
 import os
 sys.path.append('exact_riemann_solver')
 import math
-from aux_functions import dry_bed, wet_bed, sampler, plotter
-
-def print_variables(x_len, break_pos, g, cells, tolerance, iteration, t_end, h_l, u_l, h_r, u_r):
-    print('x-length: ', str(x_len))
-    print('break-position: ', str(break_pos))
-    print('gravity: ', str(g))
-    print('cells: ', str(cells))
-    print('tolerance: ', str(tolerance))
-    print('iteration: ', str(iteration))
-    print('t_end: ', str(t_end))
-    print('h_l: ', str(h_l))
-    print('u_l: ', str(u_l))
-    print('h_r: ', str(h_r))
-    print('u_r: ', str(u_r))
-
+from aux_functions import wet_bed, sampler, plotter
 
 def main(terminal_arguments):
     #reading in values
@@ -79,17 +65,13 @@ def main(terminal_arguments):
     # Dry bed case
     if (not(dpc) or h_l <= 0 or h_r <= 0):
         out_file.write('Case: Dry bed\n')
-        (h_s, u_s, a_s) = dry_bed.calculate(out_file, g, tolerance, iteration, h_l, h_r, u_l, u_r, a_l, a_r)
-        sampler.sample_dry(out_file, x_len, break_pos, t_end, cells, g, h_l, h_s, h_r, u_l, u_s, u_r, a_l, a_s, a_r)
+        sol_data = sampler.sample_dry(out_file, x_len, break_pos, t_end, cells, g, h_l, h_r, u_l, u_r, a_l, a_r)
     # Wet bed 
     else:
         out_file.write('Case: Wet bed\n')
         (h_s, u_s, a_s) = wet_bed.calculate(out_file, g, tolerance, iteration, h_l, h_r, u_l, u_r, a_l, a_r)
         sol_data = sampler.sample_wet(out_file, x_len, break_pos, t_end, cells, g, h_l, h_s, h_r, u_l, u_s, u_r, a_l, a_s, a_r)
         plotter.plot(os.path.splitext(terminal_arguments[2])[0], sol_data, x_len, break_pos, t_end, cells)
-    
-    print_variables(x_len, break_pos, g, cells, tolerance, iteration, t_end, h_l, u_l, h_r, u_r)
-    
 
 if __name__ == '__main__':
     main(sys.argv)

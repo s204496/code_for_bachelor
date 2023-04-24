@@ -65,5 +65,56 @@ def sample_wet(out_file, x_len, break_pos, t_end, cells, g, h_l, h_s, h_r, u_l, 
     return sol_data
 
 # The dry bed case
-def sample_dry(out_file, x_len, break_pos, t_end, cells, g, h_l, h_s, h_r, u_l, u_s, u_r, a_l, a_s, a_r):
-    print("The dry sampler is not implemented")
+def sample_dry(out_file, x_len, break_pos, t_end, cells, g, h_l, h_r, u_l, u_r, a_l, a_r):
+    out_file.write("Sampling the solution at t = " + str(t_end) + " with " + str(cells) + " cells:\n\n")
+    sol_data = []
+    for i in range(cells+1):
+        x_i = i*(x_len/cells)-break_pos # moving the break position to x=0
+        s = x_i/t_end # the similarity variable
+        s_sr = u_r - 2*a_r #dry/wet front speed right
+        s_hr = u_r + a_r # the speed of the head of rarefaction wave right
+        s_sl = u_l + 2*a_l #dry/wet front speed left
+        s_hl = u_l - a_l # the speed of the head of rarefaction wave left
+        if(h_l <= 0): # the left is dry
+            if (s <= s_sr): # to the left of the dry/wet front
+                u_x = u_l
+                h_x = h_l 
+            elif(s <= s_hr): # inside the rarefaction wave
+                u_x = (u_r-2*a_r+2*s)/3
+                a_x = (-u_r+2*a_r+s)/3
+                h_x = (a_x**2)/g
+            else: # to the right of the rarefaction
+                u_x = u_r
+                h_x = h_r
+        elif(h_r <= 0): # the right is dry
+            if (s <= s_hl): # to the left of the rarefaction
+                u_x = u_l
+                h_x = h_l
+            elif(s <= s_sl): # inside the rarefaction wave
+                u_x = (u_l+2*a_l-s)/3
+                a_x = (u_l+2*a_l+2*s)/3
+                h_x = (a_x**2)/g
+            else: # to the right of the dry/wet front
+                u_x = u_r
+                h_x = h_r
+        else: # the dry bed is created in the middel 
+            if (s <= s_hl): # to the left of the rarefaction
+                u_x = u_l
+                h_x = h_l 
+            elif (s <= s_sl): # in the left rarefaction
+                u_x = (u_l+2*a_l-s)/3
+                a_x = (u_l+2*a_l+2*s)/3
+                h_x = (a_x**2)/g
+            elif (s <= s_sr): # in the dry region
+                u_x = 0.0
+                h_x = 0.0
+            elif (s <= s_hr): # in the right rarefaction
+                u_x = (u_r-2*a_r+2*s)/3
+                a_x = (-u_r+2*a_r+s)/3
+                h_x = (a_x**2)/g
+            else: # to the right of the rarefaction
+                u_x = u_r
+                h_x = h_r
+        sol_data.append((i, x_i+break_pos, h_x, u_x))
+        out_file.write(str((i, x_i+break_pos, h_x, u_x)) + " ")
+    return sol_data
