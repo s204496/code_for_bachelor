@@ -66,6 +66,7 @@ def main(terminal_arguments):
     if (not(dpc) or h_l <= 0 or h_r <= 0):
         out_file.write('Case: Dry bed\n')
         sol_data = sampler.sample_dry(out_file, x_len, break_pos, t_end, cells, g, h_l, h_r, u_l, u_r, a_l, a_r)
+        plotter.plot(os.path.splitext(terminal_arguments[2])[0], sol_data, x_len, break_pos, t_end, cells)
     # Wet bed 
     else:
         out_file.write('Case: Wet bed\n')
