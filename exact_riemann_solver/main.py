@@ -23,9 +23,10 @@ The input should state the following hyperparameters:
 
 # Imports
 import sys
+import os
 sys.path.append('exact_riemann_solver')
 import math
-from aux_functions import dry_bed, wet_bed, sampler
+from aux_functions import dry_bed, wet_bed, sampler, plotter
 
 def print_variables(x_len, break_pos, g, cells, tolerance, iteration, t_end, h_l, u_l, h_r, u_r):
     print('x-length: ', str(x_len))
@@ -63,7 +64,7 @@ def main(terminal_arguments):
     #open the file writen to
     try:
         #this creates the file if it does not exist, and overwrites it if it does
-        out_file = open('exact_riemann_solver/data/' + terminal_arguments[2], 'w')
+        out_file = open('exact_riemann_solver/output/' + terminal_arguments[2], 'w')
     except:
         print('Could not find output file, please specify the output file as second argument')
         sys.exit(1)
@@ -78,17 +79,15 @@ def main(terminal_arguments):
     # Dry bed case
     if (not(dpc) or h_l <= 0 or h_r <= 0):
         out_file.write('Case: Dry bed\n')
-        value = dry_bed.calculate(out_file, x_len, break_pos, g, cells, tolerance, iteration, t_end, h_l, u_l, h_r, u_r, a_l, a_r)
-        print(value)
+        (h_s, u_s, a_s) = dry_bed.calculate(out_file, g, tolerance, iteration, h_l, h_r, u_l, u_r, a_l, a_r)
+        sampler.sample_dry(out_file, x_len, break_pos, t_end, cells, g, h_l, h_s, h_r, u_l, u_s, u_r, a_l, a_s, a_r)
     # Wet bed 
     else:
-        ####!!!!
         out_file.write('Case: Wet bed\n')
-        value = wet_bed.calculate(out_file, x_len, break_pos, g, cells, tolerance, iteration, t_end, h_l, u_l, h_r, u_r, a_l, a_r)
-        print(value)
-        print("wet bed")
+        (h_s, u_s, a_s) = wet_bed.calculate(out_file, g, tolerance, iteration, h_l, h_r, u_l, u_r, a_l, a_r)
+        sol_data = sampler.sample_wet(out_file, x_len, break_pos, t_end, cells, g, h_l, h_s, h_r, u_l, u_s, u_r, a_l, a_s, a_r)
+        plotter.plot(os.path.splitext(terminal_arguments[2])[0], sol_data, x_len, break_pos, t_end, cells)
     
-    sampler.sample(out_file, value)
     print_variables(x_len, break_pos, g, cells, tolerance, iteration, t_end, h_l, u_l, h_r, u_r)
     
 

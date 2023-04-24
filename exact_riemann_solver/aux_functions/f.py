@@ -6,7 +6,7 @@ And the differential of f, f_l and f_r given in Toro - page 98
 import math
 
 # calculate the function f_k, where k is the left or right side of the interface
-def f_k(g, h,h_k):
+def f_k(g, h, h_k):
     #rarefaction left
     if h <= h_k:
         return 2*(math.sqrt(h*g)-math.sqrt(h_k*g))
