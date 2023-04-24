@@ -91,8 +91,8 @@ def sample_dry(out_file, x_len, break_pos, t_end, cells, g, h_l, h_r, u_l, u_r, 
                 u_x = u_l
                 h_x = h_l
             elif(s <= s_sl): # inside the rarefaction wave
-                u_x = (u_l+2*a_l-s)/3
-                a_x = (u_l+2*a_l+2*s)/3
+                u_x = (u_l+2*a_l+2*s)/3
+                a_x = (u_l+2*a_l-s)/3
                 h_x = (a_x**2)/g
             else: # to the right of the dry/wet front
                 u_x = u_r
@@ -102,8 +102,8 @@ def sample_dry(out_file, x_len, break_pos, t_end, cells, g, h_l, h_r, u_l, u_r, 
                 u_x = u_l
                 h_x = h_l 
             elif (s <= s_sl): # in the left rarefaction
-                u_x = (u_l+2*a_l-s)/3
-                a_x = (u_l+2*a_l+2*s)/3
+                u_x = (u_l+2*a_l+2*s)/3
+                a_x = (u_l+2*a_l-s)/3
                 h_x = (a_x**2)/g
             elif (s <= s_sr): # in the dry region
                 u_x = 0.0
