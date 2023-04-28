@@ -55,22 +55,17 @@ def main(terminal_arguments):
         print('Could not find output file, please specify the output file as second argument')
         sys.exit(1)
 
-    #computing celerity on the left and right side
-    a_l = math.sqrt(g*h_l)
-    a_r = math.sqrt(g*h_r)
-
-    # we check whether the depth posittivity condition is satisfied, you can see this condition in Toro - Shock-cap... - page 100
-    dpc = 2*(a_l + a_r) >= (u_r - u_l)
-
-    # Dry bed case
-    if (not(dpc) or h_l <= 0 or h_r <= 0):
+    (dry_bool, h_s, u_s, a_s, psi_s) = exact_Riemann_solver(s_t_ratio, h_l, h_r, u_l, u_r, psi_l, psi_r, g, tolerance, iteration)
+    
+    # Dry bed case dry_bool = True
+    if dry_bool:
         out_file.write('Case: Dry bed\n')
-        sol_data = sampler.sample_dry(out_file, x_len, break_pos, t_end, cells, g, h_l, h_r, u_l, u_r, a_l, a_r)
+        to_output = True
+        sol_data = sampler.sample_domain_dry(out_file, to_output, x_len, break_pos, t_end, cells, g, h_l, h_r, u_l, u_r, a_l, a_r)
         plotter.plot(os.path.splitext(terminal_arguments[2])[0], sol_data, x_len, break_pos, t_end, cells)
-    # Wet bed 
+    # Wet bed, dry_bool = False
     else:
         out_file.write('Case: Wet bed\n')
-        (h_s, u_s, a_s) = wet_bed.calculate(out_file, g, tolerance, iteration, h_l, h_r, u_l, u_r, a_l, a_r)
         sol_data = sampler.sample_wet(out_file, x_len, break_pos, t_end, cells, g, h_l, h_s, h_r, u_l, u_s, u_r, a_l, a_s, a_r)
         plotter.plot(os.path.splitext(terminal_arguments[2])[0], sol_data, x_len, break_pos, t_end, cells)
 

@@ -31,4 +31,11 @@ def fkd(g, h_s, h_k, a_k):
         f_kd = g_k-(g*(h_s-h_k)/(4*(h_s**2)*g_k)) # also (5.13) second part
     return f_kd
         
+# get the speed of the dry/wet waves all four cases
+def get_dry_speeds(h_l, h_r, u_l, u_r, a_l, a_r):
+    s_sr = u_r - 2*a_r #dry/wet front speed right
+    s_hr = u_r + a_r # the speed of the head of rarefaction wave right
+    s_sl = u_l + 2*a_l #dry/wet front speed left
+    s_hl = u_l - a_l # the speed of the head of rarefaction wave left
+    return (s_sr, s_hr, s_sl, s_hl)
  
