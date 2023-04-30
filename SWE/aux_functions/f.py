@@ -15,7 +15,7 @@ def f_k(g, h, h_k):
         return (h-h_k) * math.sqrt(1/2*g*((h+h_k)/(h*h_k)))
 
 # calculate the function f
-def f(g, h, h_l, h_r, u_l, u_r):
+def f(g, h, h_l, u_l, h_r, u_r):
     return f_k(g, h, h_l) + f_k(g, h,h_r)+u_r-u_l
 
 # calculate the derivative of f_k
@@ -32,7 +32,7 @@ def fkd(g, h_s, h_k, a_k):
     return f_kd
         
 # get the speed of the dry/wet waves all four cases
-def get_dry_speeds(h_l, h_r, u_l, u_r, a_l, a_r):
+def get_dry_speeds(h_l, u_l, a_l, h_r, u_r, a_r):
     s_sr = u_r - 2*a_r #dry/wet front speed right
     s_hr = u_r + a_r # the speed of the head of rarefaction wave right
     s_sl = u_l + 2*a_l #dry/wet front speed left

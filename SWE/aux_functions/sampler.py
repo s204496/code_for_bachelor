@@ -4,9 +4,9 @@ t is a fixed value, and we want to sample the solution over x, which is discreti
 The number of points is given by the variable cells."""
 
 import math, sys
-import f
+from aux_functions import f, exact_riemann_solver, wet_bed
 
-def single_sample_wet(s, h_l, h_s, h_r, u_l, u_s, u_r, a_l, a_s, a_r, psi_l, psi_r):
+def single_sample_wet(g, s, h_l, u_l, psi_l, a_l, h_s, u_s, a_s, h_r, u_r, psi_r, a_r):
     if (s <= u_s): # to the left of the shear wave
         if (h_s > h_l): # the left wave is a shock wave
             q_l = math.sqrt(0.5*((h_s + h_l)*h_s)/(h_l**2))
@@ -51,20 +51,24 @@ def single_sample_wet(s, h_l, h_s, h_r, u_l, u_s, u_r, a_l, a_s, a_r, psi_l, psi
     sys.exit(1)
 
 # The wet bed case
-def sample_domain_wet(out_file, to_output, x_len, break_pos, t_end, cells, g, h_l, h_s, h_r, u_l, u_s, u_r, a_l, a_s, a_r):
+def sample_domain_wet(out_file, to_output, break_pos, x_len, t_end, cells, g, h_l, u_l, psi_l, h_s, u_s, a_s, h_r, u_r, psi_r):
+    a_l = math.sqrt(g*h_l)
+    a_r = math.sqrt(g*h_r)
     if to_output:
         out_file.write("Sampling the solution at t = " + str(t_end) + " with " + str(cells) + " cells:\n\n")
-    sol_data = []
+    sol_data = [[], [], []]
     for i in range(cells+1):
         x_i = i*(x_len/cells)-break_pos # moving the break position to x=0
         s = x_i/t_end # the similarity variable
-        (h_x, u_x, psi_x) = single_sample_wet(s, h_l, h_s, h_r, u_l, u_s, u_r, a_l, a_s, a_r, psi_l, psi_r)
-        sol_data.append((i, x_i+break_pos, h_x, u_x, psi_x))
+        (h_x, u_x, psi_x) = single_sample_wet(g, s, h_l, u_l, psi_l, a_l, h_s, u_s, a_s, h_r, u_r, psi_r, a_r)
+        sol_data[0].append(h_x)
+        sol_data[1].append(u_x)
+        sol_data[2].append(psi_x)
         if to_output:
             out_file.write(str((i, x_i+break_pos, h_x, u_x, psi_x)) + " ")
     return sol_data
 
-def single_sample_wet(s, s_sr, s_hr, s_sl, s_hl, h_l, h_r, u_l, u_r, a_l, a_r, psi_l, psi_r):
+def single_sample_dry(g, s, s_sr, s_hr, s_sl, s_hl, h_l, u_l, psi_l, a_l, h_r, u_r, psi_r, a_r):
     if(h_l <= 0): # the left is dry
         if (s <= s_sr): # to the left of the dry/wet front
             return (h_l, u_l, psi_l) # all these values should be 0
@@ -102,21 +106,37 @@ def single_sample_wet(s, s_sr, s_hr, s_sl, s_hl, h_l, h_r, u_l, u_r, a_l, a_r, p
             return (h_x, u_x, psi_r)
         else: # to the right of the rarefaction
             return (h_r, u_r, psi_r)
-    print("something went completely wrong in the single_sample_wet function")
+    print("something went completely wrong in the single_sample_dry function")
 
 # The dry bed case
-def sample_domain_dry(out_file, to_output, x_len, break_pos, t_end, cells, g, h_l, h_r, u_l, u_r, a_l, a_r):
+def sample_domain_dry(out_file, to_output, break_pos, x_len, t_end, cells, g, h_l, u_l, psi_l, h_r, u_r, psi_r):
+    a_l = math.sqrt(g*h_l)
+    a_r = math.sqrt(g*h_r)
+    (s_sr, s_hr, s_sl, s_hl) = f.get_dry_speeds(h_l, u_l, a_l, h_r, u_r, a_r)
     if to_output:
         out_file.write("Sampling the solution at t = " + str(t_end) + " with " + str(cells) + " cells:\n\n")
-    sol_data = []
+    sol_data = [[], [], []]
     for i in range(cells+1):
         x_i = i*(x_len/cells)-break_pos # moving the break position to x=0
         s = x_i/t_end # the similarity variable
         
-        (s_sr, s_hr, s_sl, s_hl) = f.get_dry_speeds(h_l, h_r, u_l, u_r, a_l, a_r)
-        (h_x, u_x, psi_x) = single_sample_dry(s, s_sr, s_hr, s_sl, s_hl, h_l, h_r, u_l, u_r, a_l, a_r, psi_l, psi_r)
+        (h_x, u_x, psi_x) = single_sample_dry(g, s, s_sr, s_hr, s_sl, s_hl, h_l, u_l, psi_l, a_l, h_r, u_r, psi_r, a_r)
 
-        sol_data.append((i, x_i+break_pos, h_x, u_x, psi_x))
+        sol_data[0].append(h_x)
+        sol_data[1].append(u_x)
+        sol_data[2].append(psi_x)
         if to_output:
             out_file.write(str((i, x_i+break_pos, h_x, u_x, psi_x)) + " ")
+    return sol_data
+
+def sample_exact(to_output, out_file, break_pos, x_len, t_end, cells, g, h_l, u_l, psi_l, h_r, u_r, psi_r, tolerance, iterations):
+    sol_data = [[], [], []]
+    (dry_bool, _, _, _) = exact_riemann_solver.solve(out_file, to_output, 0.0, h_l, u_l, psi_l, h_r, u_r, psi_r, g, tolerance, iterations)
+    # Dry bed case dry_bool = True
+    if dry_bool:
+        sol_data = sample_domain_dry(out_file, to_output, break_pos, x_len, t_end, cells, g, h_l, u_l, psi_l, h_r, u_r, psi_r)
+    # Wet bed, dry_bool = False
+    else:
+        (h_s, u_s, a_s) = wet_bed.calculate(out_file, to_output, g, tolerance, iterations, h_l, u_l, math.sqrt(g*h_l), h_r, u_r, math.sqrt(g*h_r))
+        sol_data = sample_domain_wet(out_file, to_output, break_pos, x_len, t_end, cells, g, h_l, u_l, psi_l, h_s, u_s, a_s, h_r, u_r, psi_r)
     return sol_data

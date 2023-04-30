@@ -1,5 +1,9 @@
 test_not_in_git/
 __pycache__/
 /.vscode/
+/SWE/.vscode/
 /exact_riemann_solver/.vscode/
+/SWE/sample_exact_solution/.vscode/
+/SWE/output/exact_solutions/
+/SWE/output/godunov_upwind_results/
 

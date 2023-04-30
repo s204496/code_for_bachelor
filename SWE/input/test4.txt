@@ -7,6 +7,7 @@ iteration: 50
 t_end: 4.0
 h_l: 0.0 
 u_l: 0.0
+psi_l: 0.0
 h_r: 1.0 
 u_r: 0.0 
-
+psi_r: 1.0
