@@ -4,6 +4,4 @@ __pycache__/
 /SWE/.vscode/
 /exact_riemann_solver/.vscode/
 /SWE/sample_exact_solution/.vscode/
-/SWE/output/exact_solutions/
-/SWE/output/godunov_upwind_results/
-
+/SWE/output/

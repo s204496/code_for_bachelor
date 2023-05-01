@@ -21,7 +21,8 @@ def newton_rapson_iter(bool_out, out_file, g, h_0, h_l, u_l, a_l, h_r, u_r, a_r,
         f_r = f.f_k(g, h_s, h_r)
         f_ld =f.fkd(g, h_s, h_l, a_l)
         f_rd =f.fkd(g, h_s, h_r, a_r)
-        h_s = h_s - (f_l+f_r+u_r-u_l)/(f_ld+f_rd) # this si the newton raphson step
+        if not(f_ld <= 0 or f_rd <= 0): # need this to deal with edge case introduced by large cell number in dry bed case
+            h_s = h_s - (f_l+f_r+u_r-u_l)/(f_ld+f_rd) # this si the newton raphson step
         h_delta = abs(h_spre-h_s)/(0.5*(h_spre + h_s))#this is a relative change defined by (5.25) in Toro - Shock-cap...
         iter = iter+1
         if h_delta < tolerance:

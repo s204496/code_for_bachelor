@@ -12,7 +12,10 @@ def f_k(g, h, h_k):
         return 2*(math.sqrt(h*g)-math.sqrt(h_k*g))
     #shock left
     else:
-        return (h-h_k) * math.sqrt(1/2*g*((h+h_k)/(h*h_k)))
+        if (h < 10e-8 or h_k < 10e-8): # need this to take care of edge case where h or h_k is very small
+            return 0.0
+        else:
+            return (h-h_k) * math.sqrt(1/2*g*((h+h_k)/(h*h_k)))
 
 # calculate the function f
 def f(g, h, h_l, u_l, h_r, u_r):
@@ -27,8 +30,11 @@ def fkd(g, h_s, h_k, a_k):
     if (h_s <= h_k):
         f_kd = g/a_k 
     else:   # 2. shock wave
-        g_k = math.sqrt(1/2*g*((h_s+h_k)/(h_s*h_k)))
-        f_kd = g_k-(g*(h_s-h_k)/(4*(h_s**2)*g_k)) # also (5.13) second part
+        if (h_s < 10e-8 or h_k < 10e-8): # need this to take care of edge case where h or h_k is very small
+            return 0.0
+        else:
+            g_k = math.sqrt(1/2*g*((h_s+h_k)/(h_s*h_k)))
+            f_kd = g_k-(g*(h_s-h_k)/(4*(h_s**2)*g_k)) # also (5.13) second part
     return f_kd
         
 # get the speed of the dry/wet waves all four cases

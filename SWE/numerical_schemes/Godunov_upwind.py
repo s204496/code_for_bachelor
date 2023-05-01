@@ -6,12 +6,11 @@
 
 import sys
 import os
-import numpy as np
 sys.path.append('../SWE')
 from aux_functions import file_manipulation, discritization, plotter, sampler
 import matplotlib.pyplot as plt
 
-def godunov(bool_store, out_file, out_name, out_dir, bool_plot, x_len, break_pos, g, cells, riemann_int, riemann_str, tolerance, iterations, t_end, h_l, u_l, psi_l, h_r, u_r, psi_r):
+def godunov(bool_store_data, out_file, out_name, out_dir, bool_plot, x_len, break_pos, g, cells, riemann_int, riemann_str, tolerance, iterations, t_end, h_l, u_l, psi_l, h_r, u_r, psi_r):
     #discritization of the domain
     (U,W) = discritization.discritize_initial_values(x_len, cells, break_pos, h_l, u_l, psi_l, h_r, u_r, psi_r)
     CFL = 0.9
@@ -19,18 +18,18 @@ def godunov(bool_store, out_file, out_name, out_dir, bool_plot, x_len, break_pos
     end = False
     while t < t_end and not(end):
         #calculate the time step
-        (delta_t, riemann_solutions) = discritization.riemann_interface(bool_store, out_file, W, g, cells, riemann_int, x_len, tolerance, iterations, CFL)
+        (delta_t, riemann_solutions) = discritization.riemann_interface(bool_store_data, out_file, W, g, cells, riemann_int, x_len, tolerance, iterations, CFL)
         if (delta_t + t > t_end):
             delta_t = t_end - t
             end = True
         else: 
             t = t + delta_t
-        fluxes = discritization.flux_from_riemann(riemann_solutions, g, cells)
+        fluxes = discritization.flux_riemann(riemann_solutions, g, cells)
         discritization.evolve(U, fluxes, x_len, delta_t, cells) # using (8.8) page 143 Toro
         discritization.W_from_U(U, W, cells)
     if (bool_plot):
         # calculate the exact solution
-        exact_data = sampler.sample_exact(bool_store, out_file, break_pos, x_len, t_end, cells, g, h_l, u_l, psi_l, h_r, u_r, psi_r, tolerance, iterations)
+        exact_data = sampler.sample_exact(bool_store_data, out_file, break_pos, x_len, t_end, cells, g, h_l, u_l, psi_l, h_r, u_r, psi_r, tolerance, iterations)
         plotter.plot(out_name, out_dir, False, True, x_len, t_end, cells, (True, False), exact_data, 1, W, riemann_str)
     return (U, W)
 

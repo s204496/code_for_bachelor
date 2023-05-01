@@ -1,6 +1,6 @@
 import numpy as np
 
-def norm_1_FVM(exact, num, cells): 
+def norm_2_FVM(exact, num, cells): 
     h = 1/cells
     e_v_local = (exact - num)**2
     e_global = np.sqrt(np.sum(e_v_local))
