@@ -9,7 +9,7 @@ The purpose of the function is to find height (h) of the water in between two wa
 We are trying to solve the equation f(h)=f_l(h,h_l) + f_r(h,h_r) + u_r - u_l = 0, which one can see on page 101 - Toro - Shock-cap...
 we do this by iteratively solving the equation h_n+1 = h_n - f(h_n)/f'(h_n)
 """
-def newton_rapson_iter(out_file, bool_out, g, h_0, h_l, u_l, a_l, h_r, u_r, a_r, tolerance, max_iterations):
+def newton_rapson_iter(bool_out, out_file, g, h_0, h_l, u_l, a_l, h_r, u_r, a_r, tolerance, max_iterations):
     h_spre, h_s = h_0, h_0
     iter = 0
     table = None

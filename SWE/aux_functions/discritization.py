@@ -62,7 +62,7 @@ def riemann_interface(bool_output, out_file, W, g, cells, solver, x_len, toleran
     riemann_solutions = [[],[],[]]
     for i in range(cells+1):
         if solver == 0: #exact
-            (dry_bool, h_x, u_x, psi_x) = exact_riemann_solver.solve(out_file, bool_output, 0.0, W[0][i], W[1][i], W[2][i], W[0][i+1], W[1][i+1], W[2][i+1], g, tolerance, iteration)
+            (dry_bool, h_x, u_x, psi_x) = exact_riemann_solver.solve(bool_output, out_file, 0.0, W[0][i], W[1][i], W[2][i], W[0][i+1], W[1][i+1], W[2][i+1], g, tolerance, iteration)
             if not(dry_bool): #in the weet bed case
                 riemann_solutions[0].append(h_x)
                 riemann_solutions[1].append(u_x)

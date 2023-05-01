@@ -3,12 +3,12 @@
 import math
 from aux_functions import newton_raphson, f
 
-def calculate(out_file, bool_output, g, tolerance, iterations, h_l, u_l, a_l, h_r, u_r, a_r):
+def calculate(bool_output, out_file, g, tolerance, iterations, h_l, u_l, a_l, h_r, u_r, a_r):
     ### get an initial guess
     h_0 = newton_raphson.initial_guess(g, h_l, u_l, a_l, h_r, u_r, a_r)
     if bool_output: 
         out_file.write("Initial guess h_0 in the mid region: " + str(h_0) + "\n")
-    h_s = newton_raphson.newton_rapson_iter(out_file, bool_output, g, h_0, h_l, u_l, a_l, h_r, u_r, a_r, tolerance, iterations)
+    h_s = newton_raphson.newton_rapson_iter(bool_output, out_file, g, h_0, h_l, u_l, a_l, h_r, u_r, a_r, tolerance, iterations)
     a_s = math.sqrt(g*h_s)
     f_l = f.f_k(g, h_s, h_l)
     f_r = f.f_k(g, h_s, h_r)

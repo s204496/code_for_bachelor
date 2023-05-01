@@ -131,12 +131,12 @@ def sample_domain_dry(out_file, to_output, break_pos, x_len, t_end, cells, g, h_
 
 def sample_exact(to_output, out_file, break_pos, x_len, t_end, cells, g, h_l, u_l, psi_l, h_r, u_r, psi_r, tolerance, iterations):
     sol_data = [[], [], []]
-    (dry_bool, _, _, _) = exact_riemann_solver.solve(out_file, to_output, 0.0, h_l, u_l, psi_l, h_r, u_r, psi_r, g, tolerance, iterations)
+    (dry_bool, _, _, _) = exact_riemann_solver.solve(to_output, out_file, 0.0, h_l, u_l, psi_l, h_r, u_r, psi_r, g, tolerance, iterations)
     # Dry bed case dry_bool = True
     if dry_bool:
         sol_data = sample_domain_dry(out_file, to_output, break_pos, x_len, t_end, cells, g, h_l, u_l, psi_l, h_r, u_r, psi_r)
     # Wet bed, dry_bool = False
     else:
-        (h_s, u_s, a_s) = wet_bed.calculate(out_file, to_output, g, tolerance, iterations, h_l, u_l, math.sqrt(g*h_l), h_r, u_r, math.sqrt(g*h_r))
+        (h_s, u_s, a_s) = wet_bed.calculate(to_output, out_file, g, tolerance, iterations, h_l, u_l, math.sqrt(g*h_l), h_r, u_r, math.sqrt(g*h_r))
         sol_data = sample_domain_wet(out_file, to_output, break_pos, x_len, t_end, cells, g, h_l, u_l, psi_l, h_s, u_s, a_s, h_r, u_r, psi_r)
     return sol_data

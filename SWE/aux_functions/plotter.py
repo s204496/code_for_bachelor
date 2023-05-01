@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 from IPython.display import display, clear_output # this is for plotting animations
+import matplotlib as mpl
 import numpy as np
 
 # this function is used if one wants to plot the numerical scheme as it progresses
@@ -41,3 +42,26 @@ def plot(out_plot_name, out_path, animate, save, x_len, t_end, cells, tuple_bool
             animator(figuare, ax)
         ax.clear()
         
+def plot_error_and_speed(speed_data, error_data, h, cells, order, out_plot_name, out_path, scheme, riemann_str):
+    mpl.rcParams['font.size'] = mpl.rcParams['font.size']*0.5 
+    figuare, ax = plt.subplots(1,2)
+    ax[0].loglog(h, error_data, '-o', label='global error', markersize=1.6, linewidth=0.9)
+    # make a slop of 1 in log-log plot 
+    slope_y = [(4*error_data[0])*((1/2)**i) for i in range(len(h))]
+    label_str = "slope -" + str(order) + " order"
+    ax[0].loglog(h, slope_y, '-o', color='red', label=label_str, markersize=1.6, linewidth=0.9)
+    ax[0].set_xlabel("h")
+    ax[0].set_ylabel("error in meters")
+    ax[0].set_title("Scheme: " + scheme + ", " + out_plot_name + " using " + riemann_str + " Riemann solver")
+    ax[0].legend()
+    slope_y = [(4*speed_data[0][0])*((4)**i) for i in range(len(cells))]
+    ax[1].loglog(cells, speed_data, '-o', label='compute time', markersize=1.6, linewidth=0.9)
+    ax[1].plot(cells, slope_y, '-o', color='red', label="slope $O(n^4)$", markersize=1.6, linewidth=0.9)
+    ax[1].set_xscale("log")
+    ax[1].set_yscale("log")
+    ax[1].set_xlabel("cells")
+    ax[1].set_ylabel("time in seconds")
+    ax[1].set_title("Scheme: " + scheme + ", " + out_plot_name + " using " + riemann_str + " Riemann solver")
+    ax[1].legend()
+    plt.savefig(out_path + '/' + scheme + "_" + out_plot_name + ".png", dpi=300)
+

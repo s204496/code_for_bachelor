@@ -8,10 +8,10 @@ import sys
 import os
 import numpy as np
 sys.path.append('../SWE')
-from aux_functions import file_manipulation, discritization, plotter, sampler, error_calculation
+from aux_functions import file_manipulation, discritization, plotter, sampler
 import matplotlib.pyplot as plt
 
-def godunov(bool_store, out_file, out_name, out_dir, bool_plot, x_len, break_pos, g, cells, tolerance, iterations, t_end, h_l, u_l, psi_l, h_r, u_r, psi_r):
+def godunov(bool_store, out_file, out_name, out_dir, bool_plot, x_len, break_pos, g, cells, riemann_int, riemann_str, tolerance, iterations, t_end, h_l, u_l, psi_l, h_r, u_r, psi_r):
     #discritization of the domain
     (U,W) = discritization.discritize_initial_values(x_len, cells, break_pos, h_l, u_l, psi_l, h_r, u_r, psi_r)
     CFL = 0.9
@@ -66,7 +66,7 @@ def main(terminal_arguments):
             print('Please specify exact, HLL or HLLC as third argument. To choose the used riemann solver')
             sys.exit(1)
     
-    (_,_) = godunov(True, out_file, os.path.splitext(terminal_arguments[2])[0], "output/godunov_upwind_results", True, x_len, break_pos, g, cells, tolerance, iterations, t_end, h_l, u_l, psi_l, h_r, u_r, psi_r)
+    (_,_) = godunov(False, out_file, os.path.splitext(terminal_arguments[2])[0], "output/godunov_upwind_results", True, x_len, break_pos, g, cells, riemann_int, riemann_str, tolerance, iterations, t_end, h_l, u_l, psi_l, h_r, u_r, psi_r)
 
 if __name__ == '__main__':
     main(sys.argv)

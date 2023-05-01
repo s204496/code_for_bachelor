@@ -2,7 +2,7 @@ import sys
 import math
 from aux_functions import f, wet_bed, sampler
 
-def solve(out_file, bool_output, s_t_ratio, h_l, u_l, psi_l, h_r, u_r, psi_r, g, tolerance, iteration):
+def solve(bool_output, out_file, s_t_ratio, h_l, u_l, psi_l, h_r, u_r, psi_r, g, tolerance, iteration):
     
     #computing celerity on the left and right side
     a_l = math.sqrt(g*h_l)
@@ -21,7 +21,7 @@ def solve(out_file, bool_output, s_t_ratio, h_l, u_l, psi_l, h_r, u_r, psi_r, g,
     else: # Wet bed case   
         if bool_output:
             out_file.write('Case: Wet bed\n')
-        (h_s, u_s, a_s) = wet_bed.calculate(out_file, bool_output, g, tolerance, iteration, h_l, u_l, a_l, h_r, u_r, a_r)
+        (h_s, u_s, a_s) = wet_bed.calculate(bool_output, out_file, g, tolerance, iteration, h_l, u_l, a_l, h_r, u_r, a_r)
         (h_x, u_x, psi_x) = sampler.single_sample_wet(g, s_t_ratio, h_l, u_l, psi_l, a_l, h_s, u_s, a_s, h_r, u_r, psi_r, a_r)
         return (False, h_x, u_x, psi_x)
     print("Should not get to this point in the program, something went wrong in the function exact_Riemann_solver")
