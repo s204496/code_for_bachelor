@@ -61,7 +61,10 @@ def plot_error_and_speed(speed_data, error_data, h, cells, order, out_plot_name,
     ax[0].loglog(h, slope_y, '-o', color='red', label=label_str, markersize=1.6, linewidth=0.9)
     ax[0].set_xlabel("h", fontsize=8)
     ax[0].set_ylabel("error in meters", fontsize=8)
-    ax[0].set_title("Scheme: " + scheme + ", " + out_plot_name + " using " + riemann_str + " Riemann solver")
+    if (scheme == "Lax Friedrich"):
+        ax[0].set_title("Scheme: " + scheme + ", " + out_plot_name)
+    else:     
+        ax[0].set_title("Scheme: " + scheme + ", " + out_plot_name + " using " + riemann_str + " Riemann solver")
     ax[0].legend()
     slope_y = [4*((speed_data[0])*((4)**i)) for i in range(len(cells))] #for each doubling on the number of cells, we expect 4 times slower computation giving O(cells^2)
     ax[1].loglog(cells, speed_data, '-o', label='compute time', markersize=1.6, linewidth=0.9)

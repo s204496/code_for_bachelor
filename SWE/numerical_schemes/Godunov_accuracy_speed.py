@@ -24,12 +24,10 @@ def main(terminal_arguments):
         riemann_int = 0 # 0 = exact, 1 = HLL, 2 = HLLC
         if (riemann_str == 'exact'):
             pass
-        elif (riemann_str == 'HLL'):
-            riemann_int = 1
         elif (riemann_str == 'HLLC'):
-            riemann_int = 2
+            riemann_int = 1
         else:
-            print('Please specify exact, HLL or HLLC as third argument. To choose the used riemann solver')
+            print('Please specify exact or HLLC as third argument. To choose the used riemann solver')
             sys.exit(1)
     
     cells_list = [100*2**i for i in range(7)]

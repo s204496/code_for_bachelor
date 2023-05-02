@@ -18,13 +18,12 @@ def godunov(bool_store_data, out_file, out_name, out_dir, bool_plot, x_len, brea
     end = False
     while t < t_end and not(end):
         #calculate the time step
-        (delta_t, riemann_solutions) = discritization.riemann_interface(bool_store_data, out_file, W, g, cells, riemann_int, x_len, tolerance, iterations, CFL)
+        (delta_t, fluxes) = discritization.boundary_fluxes(bool_store_data, out_file, W, g, cells, riemann_int, x_len, tolerance, iterations, CFL)
         if (delta_t + t > t_end):
             delta_t = t_end - t
             end = True
         else: 
             t = t + delta_t
-        fluxes = discritization.flux_riemann(riemann_solutions, g, cells)
         discritization.evolve(U, fluxes, x_len, delta_t, cells) # using (8.8) page 143 Toro
         discritization.W_from_U(U, W, cells)
     if (bool_plot):
@@ -57,12 +56,10 @@ def main(terminal_arguments):
         riemann_int = 0 # 0 = exact, 1 = HLL, 2 = HLLC
         if (riemann_str == 'exact'):
             pass
-        elif (riemann_str == 'HLL'):
-            riemann_int = 1
         elif (riemann_str == 'HLLC'):
-            riemann_int = 2
+            riemann_int = 1
         else:
-            print('Please specify exact, HLL or HLLC as third argument. To choose the used riemann solver')
+            print('Please specify exact or HLLC as third argument. To choose the used riemann solver')
             sys.exit(1)
     
     (_,_) = godunov(False, out_file, os.path.splitext(terminal_arguments[2])[0], "output/godunov_upwind_results", True, x_len, break_pos, g, cells, riemann_int, riemann_str, tolerance, iterations, t_end, h_l, u_l, psi_l, h_r, u_r, psi_r)

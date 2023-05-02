@@ -5,8 +5,8 @@ from aux_functions import f, wet_bed, sampler
 def solve(bool_output, out_file, s_t_ratio, h_l, u_l, psi_l, h_r, u_r, psi_r, g, tolerance, iteration):
     
     #computing celerity on the left and right side
-    a_l, a_r = None, None #need this to deal with edge cases for dry bed, where the float value 0 becomes negative, do to inprecision in computers. 
-    if (h_l <= 0):
+    a_l, a_r = None, None 
+    if (h_l <= 0): # need this to deal with edge cases for dry bed, where the float value 0 becomes negative, do to inprecision in computers.
         a_l = 0
     else:
         a_l = math.sqrt(g*h_l)

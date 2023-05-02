@@ -45,3 +45,8 @@ def get_dry_speeds(h_l, u_l, a_l, h_r, u_r, a_r):
     s_hl = u_l - a_l # the speed of the head of rarefaction wave left
     return (s_sr, s_hr, s_sl, s_hl)
  
+def qk(h_s, h_k): # this function is Toro (10.23)
+    if (h_s > h_k):
+        return math.sqrt(1/2*(h_s+h_k)*h_s/(h_k**2))
+    else:
+        return 1.0
