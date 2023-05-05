@@ -17,14 +17,14 @@ def Waf(bool_store_data, out_file, out_name, out_dir, bool_plot, x_len, break_po
     end = False
     while t < t_end and not(end):
         #calculate the time step
-        (delta_t, boundary_flux) = discritization.boundary_fluxes(bool_store_data, out_file, W, g, cells, riemann_int, x_len, tolerance, iterations, CFL)
+        (delta_t, boundary_flux) = discritization.fluxes_at_boundary(bool_store_data, out_file, W, g, cells, riemann_int, x_len, tolerance, iterations, CFL)
         if (delta_t + t > t_end):
             delta_t = t_end - t
             end = True
         else: 
             t = t + delta_t
-        c_k = Riemann.wave_weights(W, g, riemann_int, cells)
-        discritization.evolve(U, fluxes, x_len, delta_t, cells) # using (8.8) page 143 Toro
+        waf_flux = discritization.flux_WAF_TVD(W, g, riemann_int, cells, delta_t, x_len/cells, boundary_flux, tolerance, iterations)
+        discritization.evolve(U, waf_fluxes, x_len, delta_t, cells) # using (8.8) page 143 Toro
         discritization.W_from_U(U, W, cells)
     if (bool_plot):
         # calculate the exact solution

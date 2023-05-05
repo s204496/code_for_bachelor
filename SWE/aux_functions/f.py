@@ -50,3 +50,6 @@ def qk(h_s, h_k): # this function is Toro (10.23)
         return math.sqrt(1/2*(h_s+h_k)*h_s/(h_k**2))
     else:
         return 1.0
+
+def flux_from_w(h_x, u_x, psi_x, g):
+    return [h_x*u_x, h_x*(u_x**2) + 0.5*g*(h_x**2), h_x*u_x*psi_x]

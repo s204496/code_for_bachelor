@@ -25,13 +25,13 @@ def solve(bool_output, out_file, s_t_ratio, h_l, u_l, psi_l, h_r, u_r, psi_r, g,
             out_file.write('Case: Dry bed\n')
         (s_sr, s_hr, s_sl, s_hl) = f.get_dry_speeds(h_l, u_l, a_l, h_r, u_r, a_r)
         (h_x, u_x, psi_x) = sampler.single_sample_dry(g, s_t_ratio, s_sr, s_hr, s_sl, s_hl, h_l, u_l, psi_l, a_l, h_r, u_r, psi_r, a_r)
-        return [True, [h_x, u_x, psi_x], [0.0 ,0.0]] # no star region means h_s = 0.0, u_s = 0.0
+        return (True, (h_x, u_x, psi_x), f.flux_from_w(h_x, u_x, psi_x, g), (0.0 ,0.0)) # no star region means h_s = 0.0, u_s = 0.0
     else: # Wet bed case   
         if bool_output:
             out_file.write('Case: Wet bed\n')
         (h_s, u_s, a_s) = wet_bed.calculate(bool_output, out_file, g, tolerance, iteration, h_l, u_l, a_l, h_r, u_r, a_r)
         (h_x, u_x, psi_x) = sampler.single_sample_wet(g, s_t_ratio, h_l, u_l, psi_l, a_l, h_s, u_s, a_s, h_r, u_r, psi_r, a_r)
-        return [False, [h_x, u_x, psi_x], [h_s, u_s]]
+        return (False, (h_x, u_x, psi_x), f.flux_from_w(h_x, u_x, psi_x, g), (h_s, u_s))
     print("Should not get to this point in the program, something went wrong in the function exact_Riemann_solver")
     sys.exit(1)
     
