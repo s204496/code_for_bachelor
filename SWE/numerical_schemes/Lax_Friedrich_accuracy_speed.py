@@ -32,7 +32,7 @@ def main(terminal_arguments):
         error =  error_calculation.norm_2_FVM(exact_np[:, 0:-1], W_np[:, 1:-1], cells)
         error_list.append(error)
     
-    plotter.plot_error_and_speed(speed_list, error_list, h_list, cells_list, 1, os.path.splitext(terminal_arguments[1])[0], "output/speed_and_accuracy", "Lax Friedrich", "no riemann solver")
+    plotter.plot_error_and_speed(speed_list, error_list, h_list, cells_list, 1, os.path.splitext(terminal_arguments[1])[0], "output/speed_and_accuracy/Lax Friedrich", "Lax Friedrich", "no riemann solver")
 
 if __name__ == '__main__':
     main(sys.argv)

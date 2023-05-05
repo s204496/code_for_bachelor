@@ -1,4 +1,4 @@
-""" This is an implementation of the Lax-Friedrichs scheme, where we use 3 different Riemann solvers to compute the fluxes. 
+""" This is an implementation of the Lax-Friedrichs scheme. 
 This is a centered method, that does not depend on the Riemann solutions
 We calculate the fluxes by:
 F_{i+1/2}^{LF} = 1/2 * (F(U_i^n) + F(U_{i+1}^n)) - 1/2 * delta_x / delta_t * (U_{i+1} - U_i)

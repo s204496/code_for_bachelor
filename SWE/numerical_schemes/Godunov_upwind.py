@@ -1,7 +1,6 @@
-""" This is an implementation of the Godunov upwind scheme, where we use 3 different Riemann solvers to compute the fluxes. 
+""" This is an implementation of the Godunov upwind scheme, where we use 2 different Riemann solvers to compute the fluxes. 
 1. The exact Riemann solver
-2. The HLL Riemann solver
-3. The HLLC Riemann solver
+2. The HLLC Riemann solver
 """
 
 import sys
@@ -53,7 +52,7 @@ def main(terminal_arguments):
         sys.exit(1)
     else:
         riemann_str = terminal_arguments[3]
-        riemann_int = 0 # 0 = exact, 1 = HLL, 2 = HLLC
+        riemann_int = 0 # 0 = exact, 1 = HLLC
         if (riemann_str == 'exact'):
             pass
         elif (riemann_str == 'HLLC'):
