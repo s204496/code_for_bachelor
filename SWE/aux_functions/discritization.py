@@ -1,5 +1,6 @@
 import math
 import sys
+import numpy as np
 from aux_functions import f,exact_riemann_solver, HLLC_riemann
 
 def flux_lax_friedrich(W, U, g, cells, dx, dt):
@@ -26,13 +27,13 @@ def flux_lax_friedrich(W, U, g, cells, dx, dt):
 
 def W_from_U(U, W, cells): # this method overwrites the content of W based on U
     for i in range(cells+2):
-        W[0][i] = U[0][i]
-        if (U[0][i] <= 0):
-            W[1][i] = 0.0
-            W[2][i] = 0.0
+        W[i][0] = U[i][0]
+        if (U[i][0] <= 0):
+            W[i][1] = 0.0
+            W[i][2] = 0.0
             continue
-        W[1][i] = U[1][i]/U[0][i]
-        W[2][i] = U[2][i]/U[0][i]
+        W[i][1] = U[i][1]/U[i][0]
+        W[i][2] = U[i][2]/U[i][0]
 
 def discritize_initial_values(x_len, cells, break_pos, h_l, u_l, psi_l, h_r, u_r, psi_r):
     U = [] #first is h, second is hu, third is h*psi, these are the conservative variables
@@ -56,11 +57,11 @@ def evolve(U, fluxes, x_len, delta_t, cells):
     delta_x = x_len/cells
     for i in range(1,cells+1):
         for j in range(3):
-            U[j][i] = U[j][i] - (delta_t/delta_x)*(fluxes[j][i] - fluxes[j][i-1])
+            U[i][j] = U[i][j] - (delta_t/delta_x)*(fluxes[i][j] - fluxes[i-1][j])
     # boundary conditions
     for j in range(3):
-        U[j][0] = U[j][1]
-        U[j][cells+1] = U[j][cells]
+        U[0][j] = U[1][j]
+        U[cells+1][j] = U[cells][j]
 
 def fluxes_at_boundary(bool_output, out_file, W, g, cells, solver, x_len, tolerance, iteration, CFL): 
     S_max = -1.0
@@ -103,7 +104,8 @@ def center_dt_wet(W, cells, g, cfl, dx):
     return dt
 
 def interface_wave_speeds(W_l, W_r, g, riemann_int, tolenrance, iterations):
-    # If we call the returned array S. 
+    # This function returns (S, h_s, u_s, boundary_w), where u_s, h_s is the values in the star region, and boundary_w is the primite values at the interface
+    # The first return parameter is S, that contains information about the wave speed, further the first entry contains information about the types of waves. 
     # S[0] is the type of wave:
     # 0 = same level on both sides, means no waves
     # 1 = both are dry, all other values are 0 
@@ -112,27 +114,27 @@ def interface_wave_speeds(W_l, W_r, g, riemann_int, tolenrance, iterations):
     # 4 = dry bed, dry midel, wet-left, wet-right S[1] is S_l, S[2] is S_sl, S[3] is S_sr, S[4] is S_r
     # 5 = wet bed, with rarefaction S[1] is S_l, S[2] S_s, S[3] is S_r
     # 6 = wet bed, without rarefaction S[1] is S_l, S[2] is S_s, S[3] is S_r
-    if (W_l == W_r ): #S[0] = 4
-        return [0, 0.0, 0.0, 0.0, 0.0]
-    dry, boundary_fluxes, h_u_s = None, None, None # Just for scoping reasons
+    if (W_l == W_r ): #S[0] = 0
+        return ([0, 0.0, 0.0, 0.0, 0.0], W_l[0], W_l[1], W_l)
+    dry, _, h_u_s = None, None, None # Just for scoping reasons
     if (riemann_int == 0):
-        (dry, (h_x, u_x, psi_x), boundary_fluxes, h_u_s) = exact_riemann_solver.solve(False, None, 0.0, W_l[0], W_l[1], W_l[2], W_r[0], W_r[1], W_r[2], g, tolenrance, iterations)
+        (dry, (h_x, u_x, psi_x), _, h_u_s) = exact_riemann_solver.solve(False, None, 0.0, W_l[0], W_l[1], W_l[2], W_r[0], W_r[1], W_r[2], g, tolenrance, iterations)
     if (riemann_int == 1):
-        (dry, (h_x, u_x, psi_x), boundary_fluxes, h_u_s) = HLLC_riemann.solve(W_l[0], W_l[1], W_l[2], W_r[0], W_r[1], W_r[2], g)
+        (dry, (h_x, u_x, psi_x), _, h_u_s) = HLLC_riemann.solve(W_l[0], W_l[1], W_l[2], W_r[0], W_r[1], W_r[2], g)
     if (dry):
-        if (W_l[0] <= 0 and W_r[0] <= 0): #S[0] = 0
-            return [1, 0.0, 0.0, 0.0, 0.0]
-        elif (W_l[0] <= 0): # S[0] = 1
-            return [2, W_r[1]-2*math.sqrt(W_r[0]*g), W_r[1]+math.sqrt(W_r[0]*g), 0.0, 0.0]
+        if (W_l[0] <= 0 and W_r[0] <= 0): #S[0] = 1
+            return ([1, 0.0, 0.0, 0.0, 0.0], h_u_s[0], h_u_s[1], [h_x, u_x, psi_x])
         elif (W_l[0] <= 0): # S[0] = 2
-            return [3, W_l[1]-math.sqrt(W_l[0]*g), W_l[1]+2*math.sqrt(W_l[0]*g), 0.0, 0.0]
-        else: # S[0] = 3
-            return [4, W_l[1]-math.sqrt(W_l[0]*g), W_l[1]+2*math.sqrt(W_l[0]*g), W_r[1]-2*math.sqrt(W_r[0]*g), W_r[1]+math.sqrt(W_r[0]*g)]
+            return ([2, W_r[1]-2*math.sqrt(W_r[0]*g), W_r[1]+math.sqrt(W_r[0]*g), 0.0, 0.0], h_u_s[0], h_u_s[1], [h_x, u_x, psi_x])
+        elif (W_l[0] <= 0): # S[0] = 3
+            return ([3, W_l[1]-math.sqrt(W_l[0]*g), W_l[1]+2*math.sqrt(W_l[0]*g), 0.0, 0.0], h_u_s[0], h_u_s[1], [h_x, u_x, psi_x])
+        else: # S[0] = 4
+            return ([4, W_l[1]-math.sqrt(W_l[0]*g), W_l[1]+2*math.sqrt(W_l[0]*g), W_r[1]-2*math.sqrt(W_r[0]*g), W_r[1]+math.sqrt(W_r[0]*g)], 0.0, 0.0, [0.0, 0.0, 0.0])
     else: 
-        if (u_s > 0 and h_s <= h_l and not(np.sign(u_l - a_l) == np.sign(u_s-math.sqrt(h_s*g)))) or (u_s < 0 and h_s <= h_r and not(np.sign(u_r + a_r) == np.sign(u_s+math.sqrt(h_s*g)))): #S[0] = 4
-            return [5, W_l[1]-math.sqrt(W_l[0]*g), u_s,  W_r[1]+math.sqrt(W_r[0]*g), 0] 
+        if (h_u_s[1] > 0 and h_u_s[0] <= W_l[0] and not(np.sign(W_l[1] - math.sqrt(g*W_l[0])) == np.sign(h_u_s[1]-math.sqrt(h_u_s[0]*g)))) or (h_u_s[1] < 0 and h_u_s[0] <= W_r[0] and not(np.sign(W_r[1] + math.sqrt(W_r[0]*g) == np.sign(h_u_s[1]+math.sqrt(h_u_s[0]*g))))): #S[0] = 4
+            return ([5, W_l[1]-math.sqrt(W_l[0]*g), h_u_s[1],  W_r[1]+math.sqrt(W_r[0]*g), 0], h_u_s[0], h_u_s[1], [h_x, u_x, psi_x])
         else: # S[0] = 5
-            return [6, W_l[1]-math.sqrt(W_l[0]*g), u_s,  W_r[1]+math.sqrt(W_r[0]*g), 0] 
+            return ([6, W_l[1]-math.sqrt(W_l[0]*g), h_u_s[1],  W_r[1]+math.sqrt(W_r[0]*g), 0], h_u_s[0], h_u_s[1], [h_x, u_x, psi_x])
 
 def get_c_dw_dflux(S, w_l, w_r, delta_t, delta_x, boundary_flux, boundary_w, h_s, u_s):
     # return (number of waves, list_of_c_for_each_wave, list_of_jump_in_w, list_of_jump_in_flux) 
@@ -186,7 +188,7 @@ def get_c_dw_dflux(S, w_l, w_r, delta_t, delta_x, boundary_flux, boundary_w, h_s
             delta_flux_3 = np.array(f.flux_from_w(h_s, u_s, w_r[2], g)) - np.array(f.flux_from_w(w_r[0], w_r[1], w_r[2], g)) # flux jump across wave 3 
             return (3, [delta_x/delta_t*S[1], delta_x/delta_t*S[2], delta_x/delta_t*S[3]], [delta_w_1, delta_w_2, delta_w_3], [delta_flux_1, delta_flux_2, delta_flux_3])
 
-def super_bee_limiter(j, w_jumps_l, w_jumps_m, w_jumps_r, c):
+def super_bee_limiter(w_jumps_l, w_jumps_m, w_jumps_r, c):
     r = None # just for scope
     if c > 0:
         r = w_jumps_l/w_jumps_m
@@ -205,27 +207,29 @@ def super_bee_limiter(j, w_jumps_l, w_jumps_m, w_jumps_r, c):
         
 
 def flux_WAF_TVD(W, g, riemann_int, cells, delta_t, delta_x, boundary_flux, tolenrance, iterations):
-    S = [] 
+    S_list = [] 
     c = []
     n_waves_list = []
-    r_list = []
+    boundary_w_list = []
+    h_u_s = []
     dFlux_list = []
+    w_jumps = []
     waf_flux = []
     for i in range(cells+1):
-        S.append(interface_wave_speeds(W[:][i], W[:][i+1], g, riemann_int, tolenrance, iterations))
+        S, u_s, h_s, boundary_w = interface_wave_speeds(W[:][i], W[:][i+1], g, riemann_int, tolenrance, iterations)
+        S_list.append(S)
+        h_u_s.append([h_s, u_s])
+        boundary_w_list.append(boundary_w)
     for i in range(cells+1):
-        waves, c_k, delta_w, delta_flux_k = get_c_r_delta_flux(S, delta_t, delta_x, boundary_flux)
-        n_waves.append(waves)
+        waves, c_k, delta_w, delta_flux_k = get_c_dw_dflux(S, W[:][i], W[:][i+1], delta_t, delta_x, boundary_flux[i], boundary_w_list[i], h_u_s[i][0], h_u_s[i][1])
+        n_waves_list.append(waves)
         c.append(c_k)
         w_jumps.append(delta_w)
         dFlux_list.append(delta_flux_k)
     for i in range(cells+1):
-        if (i == 0 or cells == i):
-            waf_flux.append(0.0)
-        else:
-            waf_flux_without_sum = 0.5*(f.flux_from_w(W[i][0], W[i][1], W[i][2], g) + f.flux_from_w(W[i][0], W[i][1], W[i][2], g))
-            waf_sum = 0
-            for j in range(n_waves[i]):
-                waf_sum = waf_sum + np.sign(c[i][j])*super_bee_limiter(j, w_jumps[i-1][j], w_jumps[i][j], w_jumps[i+1][j], c[i][j])*dFlux_list[i][j]
-            waf_flux.append(waf_flux_without_sum + waf_sum)
+        waf_flux_without_sum = 0.5*(np.array(f.flux_from_w(W[i][0], W[i][1], W[i][2], g)) + np.array(f.flux_from_w(W[i][0], W[i][1], W[i][2], g)))
+        waf_sum = 0
+        for j in range(n_waves_list[i]):
+            waf_sum = waf_sum + np.sign(c[i][j])*super_bee_limiter(w_jumps[i-1][j], w_jumps[i][j], w_jumps[i+1][j], c[i][j])*dFlux_list[i][j]
+        waf_flux.append(waf_flux_without_sum + waf_sum)
     return waf_flux 

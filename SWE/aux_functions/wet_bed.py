@@ -3,8 +3,13 @@
 import math
 from aux_functions import newton_raphson, f
 
+""" 
+This method gives calculates h_s
+first comes up with an initial guess and then uses iterative method newton_raphson, to find h_s
+u_s and a_s can be calculated in closed form, once h_s is known. 
+"""
+
 def calculate(bool_output, out_file, g, tolerance, iterations, h_l, u_l, a_l, h_r, u_r, a_r):
-    ### get an initial guess
     h_0 = newton_raphson.initial_guess(g, h_l, u_l, a_l, h_r, u_r, a_r)
     if bool_output: 
         out_file.write("Initial guess h_0 in the mid region: " + str(h_0) + "\n")

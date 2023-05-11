@@ -7,6 +7,7 @@ import sys
 import os
 sys.path.append('../SWE')
 from aux_functions import file_manipulation, discritization, plotter, sampler
+import numpy as np
 import matplotlib.pyplot as plt
 
 def Waf(bool_store_data, out_file, out_name, out_dir, bool_plot, x_len, break_pos, g, cells, riemann_int, riemann_str, tolerance, iterations, t_end, h_l, u_l, psi_l, h_r, u_r, psi_r):
@@ -20,16 +21,17 @@ def Waf(bool_store_data, out_file, out_name, out_dir, bool_plot, x_len, break_po
         (delta_t, boundary_flux) = discritization.fluxes_at_boundary(bool_store_data, out_file, W, g, cells, riemann_int, x_len, tolerance, iterations, CFL)
         if (delta_t + t > t_end):
             delta_t = t_end - t
+            t = t + delta_t 
             end = True
         else: 
             t = t + delta_t
-        waf_flux = discritization.flux_WAF_TVD(W, g, riemann_int, cells, delta_t, x_len/cells, boundary_flux, tolerance, iterations)
+        waf_fluxes = discritization.flux_WAF_TVD(W, g, riemann_int, cells, delta_t, x_len/cells, boundary_flux, tolerance, iterations)
         discritization.evolve(U, waf_fluxes, x_len, delta_t, cells) # using (8.8) page 143 Toro
         discritization.W_from_U(U, W, cells)
     if (bool_plot):
         # calculate the exact solution
         exact_data = sampler.sample_exact(bool_store_data, out_file, break_pos, x_len, t_end, cells, g, h_l, u_l, psi_l, h_r, u_r, psi_r, tolerance, iterations)
-        plotter.plot(out_name, out_dir, False, True, x_len, t_end, cells, (True, False), exact_data, 1, W, riemann_str)
+        plotter.plot(out_name, out_dir, False, True, x_len, t_end, cells, (True, False), np.array(exact_data), "WAF", np.array(W), riemann_str)
     return (U, W)
 
 def main(terminal_arguments):

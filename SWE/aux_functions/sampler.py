@@ -1,6 +1,6 @@
-"""The purpose of this class is to sample the solution at a given time t_end. 
-For both the dry bed case and the wet bed case. 
-t is a fixed value, and we want to sample the solution over x, which is discretized into a number of points
+"""The purpose of this class is to be able to sample the solution at a single interface, and the entire domain at a given time t_end. 
+We handle both the dry bed case and the wet bed case. 
+When sampling the entire domain t is a fixed value, and we want to sample the solution over x, which is discretized into a number of points
 The number of points is given by the variable cells."""
 
 import math, sys
@@ -50,20 +50,19 @@ def single_sample_wet(g, s, h_l, u_l, psi_l, a_l, h_s, u_s, a_s, h_r, u_r, psi_r
     print("Something went completely wrong in the single_sample_wet function")
     sys.exit(1)
 
-# The wet bed case
+# Sample the entire domain in the wet case:
+# retruns a 2D list first index is the data point, 0...cells-1, and second is h,u,psi length 3
 def sample_domain_wet(out_file, to_output, break_pos, x_len, t_end, cells, g, h_l, u_l, psi_l, h_s, u_s, a_s, h_r, u_r, psi_r):
     a_l = math.sqrt(g*h_l)
     a_r = math.sqrt(g*h_r)
     if to_output:
         out_file.write("Sampling the solution at t = " + str(t_end) + " with " + str(cells) + " cells:\n\n")
-    sol_data = [[], [], []]
+    sol_data = []
     for i in range(cells+1):
         x_i = i*(x_len/cells)-break_pos # moving the break position to x=0
         s = x_i/t_end # the similarity variable
         (h_x, u_x, psi_x) = single_sample_wet(g, s, h_l, u_l, psi_l, a_l, h_s, u_s, a_s, h_r, u_r, psi_r, a_r)
-        sol_data[0].append(h_x)
-        sol_data[1].append(u_x)
-        sol_data[2].append(psi_x)
+        sol_data.append([h_x, u_x, psi_x])
         if to_output:
             out_file.write(str((i, x_i+break_pos, h_x, u_x, psi_x)) + " ")
     return sol_data
@@ -108,30 +107,30 @@ def single_sample_dry(g, s, s_sr, s_hr, s_sl, s_hl, h_l, u_l, psi_l, a_l, h_r, u
             return (h_r, u_r, psi_r)
     print("something went completely wrong in the single_sample_dry function")
 
-# The dry bed case
+# Sample the entire domain in the dry case:
+# retruns a 2D list first index is the data point, 0...cells-1, and second is h,u,psi length 3
 def sample_domain_dry(out_file, to_output, break_pos, x_len, t_end, cells, g, h_l, u_l, psi_l, h_r, u_r, psi_r):
     a_l = math.sqrt(g*h_l)
     a_r = math.sqrt(g*h_r)
     (s_sr, s_hr, s_sl, s_hl) = f.get_dry_speeds(h_l, u_l, a_l, h_r, u_r, a_r)
     if to_output:
         out_file.write("Sampling the solution at t = " + str(t_end) + " with " + str(cells) + " cells:\n\n")
-    sol_data = [[], [], []]
+    sol_data = []
     for i in range(cells+1):
         x_i = i*(x_len/cells)-break_pos # moving the break position to x=0
         s = x_i/t_end # the similarity variable
         
         (h_x, u_x, psi_x) = single_sample_dry(g, s, s_sr, s_hr, s_sl, s_hl, h_l, u_l, psi_l, a_l, h_r, u_r, psi_r, a_r)
 
-        sol_data[0].append(h_x)
-        sol_data[1].append(u_x)
-        sol_data[2].append(psi_x)
+        sol_data.append([h_x, u_x, psi_x])
         if to_output:
             out_file.write(str((i, x_i+break_pos, h_x, u_x, psi_x)) + " ")
     return sol_data
 
+# sample the entire domain exactly at a given time t_end. 
 def sample_exact(to_output, out_file, break_pos, x_len, t_end, cells, g, h_l, u_l, psi_l, h_r, u_r, psi_r, tolerance, iterations):
-    sol_data = [[], [], []]
-    [dry_bool, _, _] = exact_riemann_solver.solve(to_output, out_file, 0.0, h_l, u_l, psi_l, h_r, u_r, psi_r, g, tolerance, iterations)
+    sol_data = []
+    (dry_bool, _, _, _) = exact_riemann_solver.solve(to_output, out_file, 0.0, h_l, u_l, psi_l, h_r, u_r, psi_r, g, tolerance, iterations)
     # Dry bed case dry_bool = True
     if dry_bool:
         sol_data = sample_domain_dry(out_file, to_output, break_pos, x_len, t_end, cells, g, h_l, u_l, psi_l, h_r, u_r, psi_r)
