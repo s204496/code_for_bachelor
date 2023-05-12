@@ -5,6 +5,7 @@
 
 import sys
 import os
+import numpy as np
 sys.path.append('../SWE')
 from aux_functions import file_manipulation, discritization, plotter, sampler
 import matplotlib.pyplot as plt
@@ -17,9 +18,10 @@ def godunov(bool_store_data, out_file, out_name, out_dir, bool_plot, x_len, brea
     end = False
     while t < t_end and not(end):
         #calculate the time step
-        (delta_t, fluxes) = discritization.boundary_fluxes(bool_store_data, out_file, W, g, cells, riemann_int, x_len, tolerance, iterations, CFL)
+        (delta_t, fluxes) = discritization.fluxes_at_boundary(bool_store_data, out_file, W, g, cells, riemann_int, x_len, tolerance, iterations, CFL)
         if (delta_t + t > t_end):
             delta_t = t_end - t
+            t = t + delta_t
             end = True
         else: 
             t = t + delta_t
@@ -28,7 +30,7 @@ def godunov(bool_store_data, out_file, out_name, out_dir, bool_plot, x_len, brea
     if (bool_plot):
         # calculate the exact solution
         exact_data = sampler.sample_exact(bool_store_data, out_file, break_pos, x_len, t_end, cells, g, h_l, u_l, psi_l, h_r, u_r, psi_r, tolerance, iterations)
-        plotter.plot(out_name, out_dir, False, True, x_len, t_end, cells, (True, False), exact_data, 1, W, riemann_str)
+        plotter.plot(out_name, out_dir, False, True, x_len, t_end, cells, (True, False), np.array(exact_data), 0, np.array(W), riemann_str)
     return (U, W)
 
 def main(terminal_arguments):

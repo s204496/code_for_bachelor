@@ -7,7 +7,7 @@ import sys
 import os
 sys.path.append('../SWE')
 from aux_functions import file_manipulation, discritization, plotter, sampler
-import numpy as np
+import numpy as np 
 import matplotlib.pyplot as plt
 
 def Waf(bool_store_data, out_file, out_name, out_dir, bool_plot, x_len, break_pos, g, cells, riemann_int, riemann_str, tolerance, iterations, t_end, h_l, u_l, psi_l, h_r, u_r, psi_r):
@@ -31,7 +31,7 @@ def Waf(bool_store_data, out_file, out_name, out_dir, bool_plot, x_len, break_po
     if (bool_plot):
         # calculate the exact solution
         exact_data = sampler.sample_exact(bool_store_data, out_file, break_pos, x_len, t_end, cells, g, h_l, u_l, psi_l, h_r, u_r, psi_r, tolerance, iterations)
-        plotter.plot(out_name, out_dir, False, True, x_len, t_end, cells, (True, False), np.array(exact_data), "WAF", np.array(W), riemann_str)
+        plotter.plot(out_name, out_dir, False, True, x_len, t_end, cells, (True, False), np.array(exact_data), 2, np.array(W), riemann_str)
     return (U, W)
 
 def main(terminal_arguments):
@@ -64,7 +64,7 @@ def main(terminal_arguments):
             print('Please specify exact or HLLC as third argument. To choose the used riemann solver')
             sys.exit(1)
     
-    (_,_) = Waf(False, out_file, os.path.splitext(terminal_arguments[2])[0], "output/godunov_upwind_results", True, x_len, break_pos, g, cells, riemann_int, riemann_str, tolerance, iterations, t_end, h_l, u_l, psi_l, h_r, u_r, psi_r)
+    (_,_) = Waf(False, out_file, os.path.splitext(terminal_arguments[2])[0], "output/WAF_results", True, x_len, break_pos, g, cells, riemann_int, riemann_str, tolerance, iterations, t_end, h_l, u_l, psi_l, h_r, u_r, psi_r)
 
 if __name__ == '__main__':
     main(sys.argv)

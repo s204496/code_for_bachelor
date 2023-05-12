@@ -31,7 +31,7 @@ def lax_friedrich(bool_store_data, out_file, out_name, out_dir, bool_plot, x_len
     if (bool_plot):
         # calculate the exact solution
         exact_data = sampler.sample_exact(bool_store_data, out_file, break_pos, x_len, t_end, cells, g, h_l, u_l, psi_l, h_r, u_r, psi_r, tolerance, iterations)
-        plotter.plot(out_name, out_dir, False, True, x_len, t_end, cells, (True, False), exact_data, 2, W, "not used")
+        plotter.plot(out_name, out_dir, False, True, x_len, t_end, cells, (True, False), exact_data, 1, W, "not used")
     return (U, W)
 
 def main(terminal_arguments):

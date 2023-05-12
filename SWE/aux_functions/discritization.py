@@ -107,15 +107,16 @@ def interface_wave_speeds(W_l, W_r, g, riemann_int, tolenrance, iterations):
     # This function returns (S, h_s, u_s, boundary_w), where u_s, h_s is the values in the star region, and boundary_w is the primite values at the interface
     # The first return parameter is S, that contains information about the wave speed, further the first entry contains information about the types of waves. 
     # S[0] is the type of wave:
-    # 0 = same level on both sides, means no waves
+    # 0 = same level on both sides, means no waves, from riemann problem
     # 1 = both are dry, all other values are 0 
     # 2 = dry bed, dry-left, wet-right S[1] is S_sr, S[2] is S_r
     # 3 = dry bed, wet-left, dry-right S[1] is S_l, S[2] is S_sl 
-    # 4 = dry bed, dry midel, wet-left, wet-right S[1] is S_l, S[2] is S_sl, S[3] is S_sr, S[4] is S_r
-    # 5 = wet bed, with rarefaction S[1] is S_l, S[2] S_s, S[3] is S_r
-    # 6 = wet bed, without rarefaction S[1] is S_l, S[2] is S_s, S[3] is S_r
+    # 4 = dry bed, dry midel, wet-left, wet-right S[1] is S_l, S[2] is S_r
+    # 5 = wet bed, with critical left rarefaction S[1] is S_hl, S[2] S_s, S[3] is S_r
+    # 6 = wet bed, with critical right rarefaction S[1] is S_l, S[2] S_s, S[3] is S_hr
+    # 7 = wet bed, without rarefaction S[1] is S_l, S[2] is S_s, S[3] is S_r
     if (W_l == W_r ): #S[0] = 0
-        return ([0, 0.0, 0.0, 0.0, 0.0], W_l[0], W_l[1], W_l)
+        return ([0, 0.0, 0.0, 0.0], W_l[0], W_l[1], W_l)
     dry, _, h_u_s = None, None, None # Just for scoping reasons
     if (riemann_int == 0):
         (dry, (h_x, u_x, psi_x), _, h_u_s) = exact_riemann_solver.solve(False, None, 0.0, W_l[0], W_l[1], W_l[2], W_r[0], W_r[1], W_r[2], g, tolenrance, iterations)
@@ -123,19 +124,22 @@ def interface_wave_speeds(W_l, W_r, g, riemann_int, tolenrance, iterations):
         (dry, (h_x, u_x, psi_x), _, h_u_s) = HLLC_riemann.solve(W_l[0], W_l[1], W_l[2], W_r[0], W_r[1], W_r[2], g)
     if (dry):
         if (W_l[0] <= 0 and W_r[0] <= 0): #S[0] = 1
-            return ([1, 0.0, 0.0, 0.0, 0.0], h_u_s[0], h_u_s[1], [h_x, u_x, psi_x])
+            return ([1, 0.0, 0.0, 0.0], h_u_s[0], h_u_s[1], [h_x, u_x, psi_x])
         elif (W_l[0] <= 0): # S[0] = 2
-            return ([2, W_r[1]-2*math.sqrt(W_r[0]*g), W_r[1]+math.sqrt(W_r[0]*g), 0.0, 0.0], h_u_s[0], h_u_s[1], [h_x, u_x, psi_x])
-        elif (W_l[0] <= 0): # S[0] = 3
-            return ([3, W_l[1]-math.sqrt(W_l[0]*g), W_l[1]+2*math.sqrt(W_l[0]*g), 0.0, 0.0], h_u_s[0], h_u_s[1], [h_x, u_x, psi_x])
+            return ([2, W_r[1]-2*math.sqrt(W_r[0]*g), W_r[1]+math.sqrt(W_r[0]*g), 0.0], h_u_s[0], h_u_s[1], [h_x, u_x, psi_x])
+        elif (W_r[0] <= 0): # S[0] = 3
+            return ([3, W_l[1]-math.sqrt(W_l[0]*g), W_l[1]+2*math.sqrt(W_l[0]*g), 0.0], h_u_s[0], h_u_s[1], [h_x, u_x, psi_x])
         else: # S[0] = 4
-            return ([4, W_l[1]-math.sqrt(W_l[0]*g), W_l[1]+2*math.sqrt(W_l[0]*g), W_r[1]-2*math.sqrt(W_r[0]*g), W_r[1]+math.sqrt(W_r[0]*g)], 0.0, 0.0, [0.0, 0.0, 0.0])
+            return ([4, W_l[1]-math.sqrt(W_l[0]*g), W_r[1]+math.sqrt(W_r[0]*g), 0.0], 0.0, 0.0, [0.0, 0.0, 0.0])
     else: 
-        if (h_u_s[1] > 0 and h_u_s[0] <= W_l[0] and not(np.sign(W_l[1] - math.sqrt(g*W_l[0])) == np.sign(h_u_s[1]-math.sqrt(h_u_s[0]*g)))) or (h_u_s[1] < 0 and h_u_s[0] <= W_r[0] and not(np.sign(W_r[1] + math.sqrt(W_r[0]*g) == np.sign(h_u_s[1]+math.sqrt(h_u_s[0]*g))))): #S[0] = 4
-            return ([5, W_l[1]-math.sqrt(W_l[0]*g), h_u_s[1],  W_r[1]+math.sqrt(W_r[0]*g), 0], h_u_s[0], h_u_s[1], [h_x, u_x, psi_x])
-        else: # S[0] = 5
-            return ([6, W_l[1]-math.sqrt(W_l[0]*g), h_u_s[1],  W_r[1]+math.sqrt(W_r[0]*g), 0], h_u_s[0], h_u_s[1], [h_x, u_x, psi_x])
+        if (h_u_s[1] > 0 and h_u_s[0] <= W_l[0] and not(np.sign(W_l[1] - math.sqrt(g*W_l[0])) == np.sign(h_u_s[1]-math.sqrt(h_u_s[0]*g)))): #S[0] = 5
+            return ([5, W_l[1]-math.sqrt(W_l[0]*g), h_u_s[1],  W_r[1]+math.sqrt(W_r[0]*g)*f.qk(h_s, h_r), 0], h_u_s[0], h_u_s[1], [h_x, u_x, psi_x])
+        elif(h_u_s[1] < 0 and h_u_s[0] <= W_r[0] and not(np.sign(W_r[1] + math.sqrt(W_r[0]*g)) == np.sign(h_u_s[1]+math.sqrt(h_u_s[0]*g)))): #S[0] = 6
+            return ([6, W_l[1]-math.sqrt(W_l[0]*g)*f.qk(h_s, h_l), h_u_s[1],  W_r[1]+math.sqrt(W_r[0]*g), 0], h_u_s[0], h_u_s[1], [h_x, u_x, psi_x])
+        else: # S[0] = 7
+            return ([7, W_l[1]-math.sqrt(W_l[0]*g), h_u_s[1],  W_r[1]+math.sqrt(W_r[0]*g), 0], h_u_s[0], h_u_s[1], [h_x, u_x, psi_x])
 
+####!!!! came to here, fix the fact that S[0] has range values 0-7 boundaries included, but not all are handled here
 def get_c_dw_dflux(S, w_l, w_r, delta_t, delta_x, boundary_flux, boundary_w, h_s, u_s):
     # return (number of waves, list_of_c_for_each_wave, list_of_jump_in_w, list_of_jump_in_flux) 
     match S[0]:
@@ -221,7 +225,7 @@ def flux_WAF_TVD(W, g, riemann_int, cells, delta_t, delta_x, boundary_flux, tole
         h_u_s.append([h_s, u_s])
         boundary_w_list.append(boundary_w)
     for i in range(cells+1):
-        waves, c_k, delta_w, delta_flux_k = get_c_dw_dflux(S, W[:][i], W[:][i+1], delta_t, delta_x, boundary_flux[i], boundary_w_list[i], h_u_s[i][0], h_u_s[i][1])
+        waves, c_k, delta_w, delta_flux_k = get_c_dw_dflux(S_list[i], W[:][i], W[:][i+1], delta_t, delta_x, boundary_flux[i], boundary_w_list[i], h_u_s[i][0], h_u_s[i][1])
         n_waves_list.append(waves)
         c.append(c_k)
         w_jumps.append(delta_w)
@@ -231,5 +235,5 @@ def flux_WAF_TVD(W, g, riemann_int, cells, delta_t, delta_x, boundary_flux, tole
         waf_sum = 0
         for j in range(n_waves_list[i]):
             waf_sum = waf_sum + np.sign(c[i][j])*super_bee_limiter(w_jumps[i-1][j], w_jumps[i][j], w_jumps[i+1][j], c[i][j])*dFlux_list[i][j]
-        waf_flux.append(waf_flux_without_sum + waf_sum)
+        waf_flux.append(waf_flux_without_sum - waf_sum)
     return waf_flux 

@@ -62,7 +62,7 @@ def solve(h_l, u_l, psi_l, h_r, u_r, psi_r, g):
             return (False, (h_s, u_s, psi_l), [flux_HLLC_0, flux_HLLC_1, flux_HLLC_2], (h_s, u_s))
         else:
             flux_HLLC_2 = flux_HLLC_0 * psi_r
-            return (False, (h_s, u_s, psi_r) [flux_HLLC_0, flux_HLLC_1, flux_HLLC_2], (h_s, u_s))
+            return (False, (h_s, u_s, psi_r), [flux_HLLC_0, flux_HLLC_1, flux_HLLC_2], (h_s, u_s))
     print("This should never happen, something went wrong in HLLC_riemann.py") 
     sys.exit(1)
 

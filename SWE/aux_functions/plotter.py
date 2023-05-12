@@ -11,18 +11,18 @@ def animator(figuare, ax):
 
 def make_plot(out_plot_name, out_path, save, x, t_end, tuple_bool_exact_scatter, exact_data, scheme, numerical_data, figuare, ax, riemann_str, h_u_psi_str):
     mpl.rcParams['font.size'] = mpl.rcParams['font.size']*0.8 
-    if scheme > 0:
+    if scheme >= 0:
         ax.hlines(numerical_data[1:-2], x[0:-2], x[1:-1], colors=['black'], linewidth=1.0, label='numerical solution')
     if tuple_bool_exact_scatter[0]:
         ax.plot(x, exact_data, linewidth=0.5, label='exact solution')
         if (tuple_bool_exact_scatter[1]):
             ax.scatter(x, exact_data, marker='o', facecolors='white', color='k', s=1, label='exact solution points')
             figuare.suptitle(h_u_psi_str + ", exact solution at t = " + str(t_end) + " to " + out_plot_name)
-    if scheme == 1: # godunov upwind method
+    if scheme == 0: # godunov upwind method
         figuare.suptitle(h_u_psi_str + ", at t = " + str(t_end) + ", " + out_plot_name + " using Godunov upwind, and " + riemann_str + " Riemann solver")
-    if scheme == 2: # lax-friedrichs
+    if scheme == 1: # lax-friedrichs
         figuare.suptitle(h_u_psi_str + ", at t = " + str(t_end) + ", " + out_plot_name + " using Lax-Friedrich")
-    if scheme == 3: # WAF scheme 
+    if scheme == 2: # WAF scheme 
         figuare.suptitle(h_u_psi_str + ", at t = " + str(t_end) + ", " + out_plot_name + " using WAF, and " + riemann_str + " Riemann solver")
     ax.set_ylabel("height of water " + h_u_psi_str, fontsize=8)
     ax.set_xlabel("length of the channel, x", fontsize=8)
@@ -42,11 +42,11 @@ def plot(out_plot_name, out_path, animate, save, x_len, t_end, cells, tuple_bool
         temp_str = ""
         if i == 0:
             temp_str = "h(x)"
-        if i == 1:
+        elif i == 1:
             temp_str = "u(x)"
-        if i == 2:
+        elif i == 2:
             temp_str = "psi(x)"
-        make_plot(out_plot_name, out_path, save, x, t_end, tuple_bool_exact_scatter, exact_data[:][i], scheme, numerical_data[:][i], figuare, ax, riemann_str, temp_str)
+        make_plot(out_plot_name, out_path, save, x, t_end, tuple_bool_exact_scatter, exact_data[:,i], scheme, numerical_data[:,i], figuare, ax, riemann_str, temp_str)
         if animate:
             animator(figuare, ax)
         ax.clear()
