@@ -47,9 +47,9 @@ def plot(out_plot_name, out_path, animate, save, x_len, t_end, cells, tuple_bool
             temp_str = "u(x)"
         elif i == 2:
             temp_str = "psi(x)"
-        make_plot(out_plot_name, out_path, save, x, t_end, tuple_bool_exact_scatter, exact_data[:,i], scheme, numerical_data[:,i], figuare, ax, riemann_str, temp_str)
+        make_plot(out_plot_name, out_path, save, x, t_end, tuple_bool_exact_scatter, exact_data[:,i], scheme, numerical_data[:,i], figure, ax, riemann_str, temp_str)
         if animate:
-            animator(figuare, ax)
+            animator(figure, ax)
         ax.clear()
         
 def plot_error_and_speed(speed_data, error_data, h, cells, order, out_plot_name, out_path, scheme, riemann_str):
