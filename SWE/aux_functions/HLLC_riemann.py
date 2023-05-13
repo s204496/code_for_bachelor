@@ -20,7 +20,7 @@ def solve(h_l, u_l, psi_l, h_r, u_r, psi_r, g):
 
     if (h_l <= 0): # left dry
         if (h_r <= 0):
-            return (True, (0.0, 0.0, 0.0), [0.0, 0.0, 0.0] (0.0, 0.0))
+            return (True, (0.0, 0.0, 0.0), [0.0, 0.0, 0.0], (0.0, 0.0))
         w = compute_w_rarefaction(False, g, h_r, u_r, psi_r)
         return (True, w, f.flux_from_w(w[0], w[1], w[2], g), (0.0, 0.0))
     elif (h_r <= 0): # right dry
@@ -42,7 +42,7 @@ def solve(h_l, u_l, psi_l, h_r, u_r, psi_r, g):
         return (False, w, f.flux_from_w(w[0], w[1], w[2], g), (h_s, u_s)) 
     elif (u_s < 0 and h_s <= h_r and not(np.sign(u_r + a_r) == np.sign(u_s+math.sqrt(h_s*g)))):
         w = compute_w_rarefaction(False, g, h_r, u_r, psi_r)
-        return [False, w, f.flux_from_w(w[0], w[1], w[2], g) [h_s, u_s]] 
+        return (False, w, f.flux_from_w(w[0], w[1], w[2], g), (h_s, u_s)) 
     q_l = f.qk(h_s, h_l)
     q_r = f.qk(h_s, h_r)
     S_l = u_l - a_l*q_l # (10.22) Toro - shock-cap...

@@ -161,7 +161,7 @@ def get_c_dw_dflux(S, w_l, w_r, delta_t, delta_x, boundary_flux, boundary_w, h_s
             return (0, [0.0, 0.0, 0.0], no_output, no_output) 
         case 2: # Left side is dry
             delta_w_1 = np.array(boundary_w) - np.array([0.0, 0.0, 0.0]) # w jump across wave 1 
-            delta_w_2 = np.array(W_r) - np.array(boundary_w)  # w jump across shear wave
+            delta_w_2 = np.array(w_r) - np.array(boundary_w)  # w jump across shear wave
             delta_flux_1 = np.array(boundary_flux) - np.array([0.0, 0.0, 0.0])  # flux jump across wave 1 
             delta_flux_2 = np.array(f.flux_from_w(w_r[0], w_r[1], w_r[2], g)) - np.array(boundary_flux)  # flux jump across wave 1 
             return (2, [delta_t/delta_x*S[1][0], delta_t/delta_x*S[1][1], 0.0], [delta_w_1, delta_w_2, no_output_entry], [delta_flux_1, delta_flux_2, no_output_entry])
@@ -175,7 +175,7 @@ def get_c_dw_dflux(S, w_l, w_r, delta_t, delta_x, boundary_flux, boundary_w, h_s
             delta_w_1 = np.array([0.0, 0.0, 0.0]) - np.array(w_l) # w jump across wave 1 
             delta_w_2 = np.array(w_r) - np.array([0.0, 0.0, 0.0]) # w jump across wave 2 
             delta_flux_1 = np.array([0.0, 0.0, 0.0]) - np.array(f.flux_from_w(w_l[0], w_l[1], w_l[2], g)) # flux jump across wave 1 
-            delta_flux_2 = np.array(w_r[0], w_r[1], w_r[2], g) - np.array([0.0, 0.0, 0.0]) # flux jump across wave 2 
+            delta_flux_2 = np.array(f.flux_from_w(w_r[0], w_r[1], w_r[2], g)) - np.array([0.0, 0.0, 0.0]) # flux jump across wave 2 
             return (2, [delta_t/delta_x*S[1][0], delta_t/delta_x*S[1][1], 0.0], [delta_w_1, delta_w_2, no_output_entry], [delta_flux_1, delta_flux_2, no_output_entry])
         case 5: # Left sonic rarefaction
             delta_w_1 = np.array(boundary_w) - np.array(w_l) # w jump across wave 1 
@@ -246,8 +246,12 @@ def flux_WAF_TVD(W, g, riemann_int, cells, delta_t, delta_x, boundary_flux, tole
         waf_sum = np.array([0.0, 0.0, 0.0])
         for j in range(n_waves_list[i]):
             if j == 0 or j == 2 or (j == 1 and n_waves_list[i] == 2):
+                if (math.isclose(w_jumps[i][j][0], 0.0, rel_tol=1e-8)):
+                    continue
                 waf_sum = waf_sum + np.sign(c[i][j])*super_bee_limiter(w_jumps[i-1][j][0], w_jumps[i][j][0], w_jumps[i+1][j][0], c[i][j])*dFlux_list[i][j]
             else:
+                if (math.isclose(w_jumps[i][j][2], 0.0, rel_tol=1e-8)):
+                    continue
                 waf_sum = waf_sum + np.sign(c[i][j])*super_bee_limiter(w_jumps[i-1][j][2], w_jumps[i][j][2], w_jumps[i+1][j][2], c[i][j])*dFlux_list[i][j]
         waf_flux.append(waf_flux_without_sum - (1/2*waf_sum))
     return waf_flux 
