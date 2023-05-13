@@ -1,6 +1,6 @@
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 from IPython.display import display, clear_output # this is for plotting animations
-import matplotlib as mpl
 import numpy as np
 
 # this function is used if one wants to plot the numerical scheme as it progresses
@@ -36,7 +36,8 @@ def make_plot(out_plot_name, out_path, save, x, t_end, tuple_bool_exact_scatter,
         plt.savefig(out_path + '/' + h_u_psi_str + out_plot_name + riemann_str + ".png", dpi=300)
 
 def plot(out_plot_name, out_path, animate, save, x_len, t_end, cells, tuple_bool_exact_scatter, exact_data, scheme, numerical_data, riemann_str):
-    figuare, ax = plt.subplots(1,1)
+    figure, ax = plt.subplots(1,1)
+
     x = np.linspace(0, x_len, cells+1)
     for i in range(3):
         temp_str = ""
