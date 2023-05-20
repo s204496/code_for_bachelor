@@ -3,90 +3,77 @@ import sys
 import numpy as np
 from aux_functions import f,exact_riemann_solver, HLLC_riemann
 
-def flux_lax_friedrich(W, U, g, cells, dx, dt):
-    fluxes_at_boundaries = [[],[],[]]
-    fluxes_cells = [[],[],[]]
-    # define u1-3 for scope
-    for i in range(cells+2): # compute fluxes for cells
-        u1 = W[0][i]
-        if (u1 <= 0):#this is just and edge case, to avoid division by zero due to float inaccuracy, when number of cells is very large
-            fluxes_cells[0].append(0.0)
-            fluxes_cells[1].append(0.0)
-            fluxes_cells[2].append(0.0)
-            continue
-        u2 = u1 * W[1][i]
-        u3 = u1 * W[2][i]
-        fluxes_cells[0].append(u2)
-        fluxes_cells[1].append((u2**2)/u1 + 0.5*g*(u1**2))
-        fluxes_cells[2].append((u2*u3)/u1)
-    for i in range(cells+1): # compute fluex for boundaries with the fluxes for cells given above
-        fluxes_at_boundaries[0].append(0.5*(fluxes_cells[0][i] + fluxes_cells[0][i+1]) + 0.5*(dx/dt)*(U[0][i]-U[0][i+1]))
-        fluxes_at_boundaries[1].append(0.5*(fluxes_cells[1][i] + fluxes_cells[1][i+1]) + 0.5*(dx/dt)*(U[1][i]-U[1][i+1]))
-        fluxes_at_boundaries[2].append(0.5*(fluxes_cells[2][i] + fluxes_cells[2][i+1]) + 0.5*(dx/dt)*(U[2][i]-U[2][i+1]))
+# Computes the Lax-Friedrichs fluxes at the cell boundaries (see. Toro (9.29) - page 163)
+def flux_lax_friedrich(W, U, x_len, cells, g, dt):
+    fluxes_cells = np.empty([cells+2, 3])
+    dx = x_len/cells
+    for i in range(cells+2):
+        # If statement is just an edge case, to avoid division by zero due to float inaccuracy, happens when number of cells is very large
+        if (W[i,0] <= 0): 
+            fluxes_cells[i] = np.array([0.0, 0.0, 0.0])
+        else:
+            fluxes_cells[i] = f.flux_from_w(W[i], g)
+    fluxes_at_boundaries = np.array([(0.5*(fluxes_cells[i] + fluxes_cells[i+1]) + 0.5*(dx/dt)*(U[i]-U[i+1])) for i in range(cells+1)])
     return fluxes_at_boundaries 
 
-def W_from_U(U, W, cells): # this method overwrites the content of W based on U
-    for i in range(cells+2):
-        W[i][0] = U[i][0]
-        if (U[i][0] <= 0):
-            W[i][1] = 0.0
-            W[i][2] = 0.0
-            continue
-        W[i][1] = U[i][1]/U[i][0]
-        W[i][2] = U[i][2]/U[i][0]
+# Computes the dt for the Lax-friedrichs scheme, not depend on Riemann solvers
+def center_dt(W, x_len, cells, g, cfl):
+    S_max = -1.0
+    dx = x_len/cells
+    for i in range(1,cells+1):
+        S = abs(W[i,1]) + math.sqrt(g*W[i,0])
+        if(S_max < S):
+            S_max = S
+    return cfl*dx/S_max
 
-def discritize_initial_values(x_len, cells, break_pos, h_l, u_l, psi_l, h_r, u_r, psi_r):
-    U = [] #first is h, second is hu, third is h*psi, these are the conservative variables
-    W = [] #first is h, second is u, third is psi, primitive variables
-    for i in range(cells): # two more cells for the boundary conditions
+# This method overwrites the content of W based on U
+def W_from_U(U, W): 
+    mask = U[:,0] > 0.0000000
+    W[mask,0] = U[mask,0]
+    W[mask,1:3] = U[mask,1:3]/U[mask,0].reshape(-1,1)
+    W[~mask,:] = 0.0
+
+# Computes the initial values of U and W, for 1D dame break propblem, U is conservative variables, W is primitive variables
+def discretize_initial_values(x_len, cells, break_pos, W_l, W_r):
+    U, W = np.empty([cells+2, 3]), np.empty([cells+2, 3])
+    for i in range(cells): 
         x_i = i*x_len/cells
         if(x_i < break_pos):
-            U.append([h_l, h_l*u_l, h_l*psi_l])
-            W.append([h_l, u_l, psi_l])
+            U[i+1] = np.array([W_l[0], W_l[0]*W_l[1], W_l[0]*W_l[2]])
+            W[i+1] = np.array([W_l[0], W_l[1], W_l[2]])
         else:
-            U.append([h_r, h_r*u_r, h_r*psi_r])
-            W.append([h_r, u_r, psi_r])
+            U[i+1] = np.array([W_r[0], W_r[0]*W_r[1], W_r[0]*W_r[2]])
+            W[i+1] = np.array([W_r[0], W_r[1], W_r[2]])
     # boundary conditions
-    U.insert(0,U[0])
-    U.append(U[cells])
-    W.insert(0,W[0])
-    W.append(W[cells])
+    U[0], W[0], U[cells+1], W[cells+1] = U[1], W[1], U[cells], W[cells]
     return (U,W)
 
+# Formular (Toro (8.8) - page 143)
 def evolve(U, fluxes, x_len, delta_t, cells):
     delta_x = x_len/cells
-    for i in range(1,cells+1):
-        for j in range(3):
-            U[i][j] = U[i][j] - (delta_t/delta_x)*(fluxes[i][j] - fluxes[i-1][j])
-    # boundary conditions
-    for j in range(3):
-        U[0][j] = U[1][j]
-        U[cells+1][j] = U[cells][j]
+    U[1:-1,:] = U[1:-1,:] - (delta_t/delta_x)*(fluxes[1:,:] - fluxes[0:-1,:])
+    U[0,:], U[cells+1,:] = U[1,:], U[cells,:] 
 
-def fluxes_at_boundary(bool_output, out_file, W, g, cells, solver, x_len, tolerance, iteration, CFL): 
-    S_max = -1.0
-    boundary_flux = []
+# Computes the fluxes at the cell boundaries and dt based on (9.19 & 9.21 page 157-158)
+def flux_at_boundaries(W, g, cells, solver, x_len, tolerance, iteration, CFL): 
+    S_max, boundary_flux = -1.0, np.empty([cells+1, 3])
     for i in range(cells+1):
         dry_bool_c = False
         if solver == 0: #exact
-            (dry_bool, (_, _, _), fluxes, (_ , _)) = exact_riemann_solver.solve(bool_output, out_file, 0.0, W[i][0], W[i][1], W[i][2], W[i+1][0], W[i+1][1], W[i+1][2], g, tolerance, iteration)
-            boundary_flux.append(fluxes)
-            dry_bool_c = dry_bool
+            (dry_bool_c, (_, _, _), boundary_flux[i], (_ , _)) = exact_riemann_solver.solve(0.0, W[i,:], W[i+1,:], g, tolerance, iteration)
         elif solver == 1: # HLLC 
-            (dry_bool, (_, _, _), fluxes, (_ , _)) = HLLC_riemann.solve(W[i][0], W[i][1], W[i][2], W[i+1][0], W[i+1][1], W[i+1][2], g)
-            boundary_flux.append(fluxes)
-            dry_bool_c = dry_bool
-        if not(dry_bool_c): #in the weet bed case
-            S = abs(W[i][1]) + math.sqrt(g*W[i][0])
+            (dry_bool, (_, _, _), boundary_flux[i], (_ , _)) = HLLC_riemann.solve(W[i,:], W[i+1,:], g)
+        if not(dry_bool_c): # Weet bed case
+            S = abs(W[i,1].item()) + math.sqrt(g*W[i,0].item())
             if(S_max < S):
                 S_max = S 
-        else: #in the dry bed case
+        else: # Dry bed case
             a_l, a_r = 0.0, 0.0
-            if (W[i][0] > 0): 
-                a_l = math.sqrt(g*W[i][0])
-            if (W[i+1][0] > 0):
-                a_r = math.sqrt(g*W[i+1][0])
-            (s_sr, s_hr, s_sl, s_hl) = f.get_dry_speeds(W[i][0], W[i][1], a_l, W[i+1][0], W[i+1][1], a_r)
+            if (W[i,0] > 0): 
+                a_l = math.sqrt(g*W[i,0])
+            if (W[i+1,0] > 0):
+                a_r = math.sqrt(g*W[i+1,0])
+            (s_sr, s_hr, s_sl, s_hl) = f.get_dry_speeds(W[i,1], a_l, W[i+1,1], a_r)
             max_dry_speed = max(abs(s_sr), abs(s_hr), abs(s_sl), abs(s_hl))
             if(S_max < max_dry_speed):
                 S_max = max_dry_speed 
@@ -94,37 +81,31 @@ def fluxes_at_boundary(bool_output, out_file, W, g, cells, solver, x_len, tolera
     delta_t = CFL*delta_x/S_max
     return (delta_t, boundary_flux)
 
-def center_dt_wet(W, cells, g, cfl, dx):
-    S_max = -1.0
-    for i in range(1,cells+1):
-        S = abs(W[1][i]) + math.sqrt(g*W[0][i])
-        if(S_max < S):
-            S_max = S
-    dt = cfl*dx/S_max
-    return dt
-
+""" This function returns (S_type, wave_speeds, h_s, u_s, boundary_w), used in the TVD-WAF scheme
+u_s, h_s is the values in the star region. Boundary_w is the primite values at the interfaces.
+The wave_speeds, is an array of 3 values, the speed of each wave, note that some type of wave patterns do not have 3 different waves. 
+S_type, described what types of waves we are dealing with. Each of the 11 possible wave types are listed below:
+0 = Same level on both sides of interface, means no waves.
+1 = Both sides of interface are dry, all other values are 0 
+####!!!! got here in this comment
+2 = Dry bed, dry-left, wet-right S[1][0] is S_sr, S[1][1] is S_r
+3 = Dry bed, wet-left, dry-right S[1][0] is S_l, S[1][1] is S_sl 
+4 = Dry bed, dry midel, wet-left, wet-right S[1][0] is S_l, S[1][1] is S_r
+5 = Wet bed, with critical left rarefaction S[1][0] is S_hl, S[1][1] u_s, S[1][2] is S_r
+6 = Wet bed, with critical right rarefaction S[1][0] is S_l, S[1][1] u_s, S[1][2] is S_hr
+7 = Wet bed, shock-shock S[1][0] is S_l, S[1][1] is u_s, S[1][2] is S_r
+8 = Wet bed, rarefaction-shock S[1][0] is S_hl, S[1][1] is u_s, S[1][2] is S_r 
+9 = Wet bed, shock-rarefaction S[1][0] is S_l, S[1][1] is u_s, S[1][2] is S_hr
+10 = wet bed, rarefaction-rarefaction S[1][0] is S_hl, S[1][1] is u_s, S[1][2] is S_hr
+"""
 def interface_wave_speeds(W_l, W_r, g, riemann_int, tolenrance, iterations):
-    # This function returns (S_type, wave_speeds, h_s, u_s, boundary_w), where u_s, h_s is the values in the star region, and boundary_w is the primite values at the interface
-    # The wave_speeds, is an array of 3 values, the speed of each wave, note that some type of wave patterns do not have 3 different waves. 
-    # S_type, described what types of waves we are dealing with, each of the 7 possiblities are listed below:
-    # 0 = same level on both sides, means no waves, from riemann problem
-    # 1 = both are dry, all other values are 0 
-    # 2 = dry bed, dry-left, wet-right S[1][0] is S_sr, S[1][1] is S_r
-    # 3 = dry bed, wet-left, dry-right S[1][0] is S_l, S[1][1] is S_sl 
-    # 4 = dry bed, dry midel, wet-left, wet-right S[1][0] is S_l, S[1][1] is S_r
-    # 5 = wet bed, with critical left rarefaction S[1][0] is S_hl, S[1][1] u_s, S[1][2] is S_r
-    # 6 = wet bed, with critical right rarefaction S[1][0] is S_l, S[1][1] u_s, S[1][2] is S_hr
-    # 7 = wet bed, shock-shock S[1][0] is S_l, S[1][1] is u_s, S[1][2] is S_r
-    # 8 = wet bed, rarefaction-shock S[1][0] is S_hl, S[1][1] is u_s, S[1][2] is S_r 
-    # 9 = wet bed, shock-rarefaction S[1][0] is S_l, S[1][1] is u_s, S[1][2] is S_hr
-    # 10 = wet bed, rarefaction-rarefaction S[1][0] is S_hl, S[1][1] is u_s, S[1][2] is S_hr
-    if (W_l == W_r ): # Case 0
-        return (0, [0.0, 0.0, 0.0], W_l[0], W_l[1], W_l)
-    dry, _, h_u_s = None, None, None # Just for scoping reasons
+    if (W_l == W_r): # Case 0
+        return (0, [0.0, 0.0, 0.0], W_l[0].item(), W_l[1].item(), W_l)
+    dry, _, h_u_s = False, None, None # Just for scoping reasons
     if (riemann_int == 0):
-        (dry, (h_x, u_x, psi_x), _, h_u_s) = exact_riemann_solver.solve(False, None, 0.0, W_l[0], W_l[1], W_l[2], W_r[0], W_r[1], W_r[2], g, tolenrance, iterations)
+        (dry, W_x, _, h_u_s) = exact_riemann_solver.solve(False, None, 0.0, W_l[0], W_l[1], W_l[2], W_r[0], W_r[1], W_r[2], g, tolenrance, iterations)
     if (riemann_int == 1):
-        (dry, (h_x, u_x, psi_x), _, h_u_s) = HLLC_riemann.solve(W_l[0], W_l[1], W_l[2], W_r[0], W_r[1], W_r[2], g)
+        (dry, W_x, _, h_u_s) = HLLC_riemann.solve(W_l[0], W_l[1], W_l[2], W_r[0], W_r[1], W_r[2], g)
     if (dry):
         if (W_l[0] <= 0 and W_r[0] <= 0): # Case 1
             return (1, [0.0, 0.0, 0.0], h_u_s[0], h_u_s[1], [h_x, u_x, psi_x])

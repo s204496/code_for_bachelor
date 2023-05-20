@@ -4,6 +4,7 @@ And the differential of f, f_l and f_r given in Toro - page 98
 """
 
 import math
+import numpy as np
 
 # calculate the function f_k, where k is the left or right side of the interface
 def f_k(g, h, h_k):
@@ -38,12 +39,8 @@ def fkd(g, h_s, h_k, a_k):
     return f_kd
         
 # get the speed of the dry/wet waves all four cases
-def get_dry_speeds(h_l, u_l, a_l, h_r, u_r, a_r):
-    s_sr = u_r - 2*a_r #dry/wet front speed right
-    s_hr = u_r + a_r # the speed of the head of rarefaction wave right
-    s_sl = u_l + 2*a_l #dry/wet front speed left
-    s_hl = u_l - a_l # the speed of the head of rarefaction wave left
-    return (s_sr, s_hr, s_sl, s_hl)
+def get_dry_speeds(u_l, a_l, u_r, a_r):
+    return (u_r - 2*a_r, u_r + a_r, u_l + 2*a_l, u_l - a_l) # dry/wet front right, head right rarefaction, dry/wet front left, head left rarefaction
  
 def qk(h_s, h_k): # this function is Toro (10.23)
     if (h_s > h_k):
@@ -51,5 +48,5 @@ def qk(h_s, h_k): # this function is Toro (10.23)
     else:
         return 1.0
 
-def flux_from_w(h_x, u_x, psi_x, g):
-    return [h_x*u_x, h_x*(u_x**2) + 0.5*g*(h_x**2), h_x*u_x*psi_x]
+def flux_from_w(W, g):
+    return np.array([W[0]*W[1], W[0]*(W[1]**2) + 0.5*g*(W[0]**2), W[0]*W[1]*W[2]])

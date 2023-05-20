@@ -39,16 +39,8 @@ def main(terminal_arguments):
         sys.exit(1)
     (x_len, break_pos, g, cells, tolerance, iterations, t_end, h_l, u_l, psi_l, h_r, u_r, psi_r) = file_manipulation.extract(read_file) 
 
-    #open the file writen to
-    try:
-        #this creates the file if it does not exist, and overwrites it if it does
-        out_file = open('output/exact_solutions/' + terminal_arguments[2], 'w')
-    except:
-        print('Could not find output file, please specify the output file as second argument')
-        sys.exit(1)
-
-    sol_data = sampler.sample_exact(True, out_file, break_pos, x_len, t_end, cells, g, h_l, u_l, psi_l, h_r, u_r, psi_r, tolerance, iterations)
-    plotter.plot(os.path.splitext(terminal_arguments[2])[0], 'output/exact_solutions', False, True, x_len, t_end, cells, (True, True), sol_data, -1, "not used", "not used")
+    sol_data = sampler.sample_exact(break_pos, x_len, t_end, cells, g, np.array([h_l, u_l, psi_l]), np.array([h_r, u_r, psi_r]), tolerance, iterations)
+    plotter.plot(os.path.splitext(terminal_arguments[2])[0], 'output/exact_solutions', x_len, t_end, cells, (True, True), sol_data, -1, "not used", "not used")
 
 if __name__ == '__main__':
     main(sys.argv)

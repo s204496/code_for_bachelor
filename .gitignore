@@ -4,5 +4,6 @@ __pycache__/
 /SWE/.vscode/
 /exact_riemann_solver/.vscode/
 /SWE/sample_exact_solution/.vscode/
-/SWE/output/*
-!/SWE/output/.gitkeep
+/SWE/output/*/*
+/SWE/Data_driven/Generated_Data/*
+!/SWE/Data_driven/Generated_Data/.gitkeep

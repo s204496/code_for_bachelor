@@ -1,10 +1,10 @@
-# This class runs multiple instances of the Godunov scheme, and plots the results of accuracy and speed
+# This class runs multiple instances of the TVD WAF scheme, and plots the results of accuracy and speed
 
 import sys
 import os
 sys.path.append('../SWE')
 import time
-import Godunov_upwind
+import WAF 
 import numpy as np
 from aux_functions import sampler, error_calculation, file_manipulation, plotter
 
@@ -30,7 +30,7 @@ def main(terminal_arguments):
             print('Please specify exact or HLLC as third argument. To choose the used riemann solver')
             sys.exit(1)
     
-    cells_list = [100*2**i for i in range(7)]
+    cells_list = [100*2**i for i in range(6)]
     h_list = [1/cells for cells in cells_list] 
     W_l, W_r = np.array([h_l, u_l, psi_l]), np.array([h_r, u_r, psi_r])
     error_list = []
@@ -38,7 +38,7 @@ def main(terminal_arguments):
 
     for cells in cells_list:
         start_time = time.time()
-        (U,W) = Godunov_upwind.godunov(False, "", "", "", False, x_len, break_pos, g, cells, riemann_int, riemann_str, tolerance, iterations, t_end, W_l, W_r)
+        (U,W) = WAF.Waf(False, "", "", "", False, x_len, break_pos, g, cells, riemann_int, riemann_str, tolerance, iterations, t_end, W_l, W_r)
         end_time = time.time()
         elapsed_time = end_time - start_time
         speed_list.append(elapsed_time)
@@ -47,7 +47,7 @@ def main(terminal_arguments):
         error =  error_calculation.norm_2_FVM(exact_np[:, :], W_np[1:-1, :], cells)
         error_list.append(error)
     
-    plotter.plot_error_and_speed(speed_list, error_list, h_list, cells_list, os.path.splitext(terminal_arguments[1])[0], "output/speed_and_accuracy/Godunov Upwind", "Godunov Upwind", riemann_str)
+    plotter.plot_error_and_speed(speed_list, error_list, h_list, cells_list, os.path.splitext(terminal_arguments[1])[0], "output/speed_and_accuracy/WAF", "TVD WAF", riemann_str)
 
 if __name__ == '__main__':
     main(sys.argv)

@@ -6,19 +6,23 @@
 import sys
 import os
 import numpy as np
-sys.path.append('../SWE')
-from aux_functions import file_manipulation, discritization, plotter, sampler
 import matplotlib.pyplot as plt
 
-def godunov(bool_store_data, out_file, out_name, out_dir, bool_plot, x_len, break_pos, g, cells, riemann_int, riemann_str, tolerance, iterations, t_end, h_l, u_l, psi_l, h_r, u_r, psi_r):
+sys.path.append('../SWE')
+from aux_functions import file_manipulation, discritization, plotter, sampler
+
+# This is for the single sample case which is used to train the FFNN
+#def godunov_single_sample():
+#
+def godunov_entire_domain(bool_store_data, out_file, out_name, out_dir, bool_plot, x_len, break_pos, g, cells, riemann_int, riemann_str, tolerance, iterations, t_end, W_l, W_r):
     #discritization of the domain
-    (U,W) = discritization.discritize_initial_values(x_len, cells, break_pos, h_l, u_l, psi_l, h_r, u_r, psi_r)
+    (U,W) = discritization.discretize_initial_values(x_len, cells, break_pos, W_l, W_r)
     CFL = 0.9
     t = 0
     end = False
     while t < t_end and not(end):
         #calculate the time step
-        (delta_t, fluxes) = discritization.fluxes_at_boundary(bool_store_data, out_file, W, g, cells, riemann_int, x_len, tolerance, iterations, CFL)
+        (delta_t, fluxes) = discritization.flux_at_boundaries(W, g, cells, riemann_int, x_len, tolerance, iterations, CFL)
         if (delta_t + t > t_end):
             delta_t = t_end - t
             t = t + delta_t
@@ -26,11 +30,11 @@ def godunov(bool_store_data, out_file, out_name, out_dir, bool_plot, x_len, brea
         else: 
             t = t + delta_t
         discritization.evolve(U, fluxes, x_len, delta_t, cells) # using (8.8) page 143 Toro
-        discritization.W_from_U(U, W, cells)
+        discritization.W_from_U(U, W)
     if (bool_plot):
         # calculate the exact solution
-        exact_data = sampler.sample_exact(bool_store_data, out_file, break_pos, x_len, t_end, cells, g, h_l, u_l, psi_l, h_r, u_r, psi_r, tolerance, iterations)
-        plotter.plot(out_name, out_dir, False, True, x_len, t_end, cells, (True, False), np.array(exact_data), 0, np.array(W), riemann_str)
+        exact_data = sampler.sample_exact(break_pos, x_len, t_end, cells, g, W_l, W_r, tolerance, iterations)
+        plotter.plot(out_name, out_dir, x_len, t_end, cells, (True, False), np.array(exact_data), 0, np.array(W), riemann_str)
     return (U, W)
 
 def main(terminal_arguments):
@@ -63,7 +67,7 @@ def main(terminal_arguments):
             print('Please specify exact or HLLC as third argument. To choose the used riemann solver')
             sys.exit(1)
     
-    (_,_) = godunov(False, out_file, os.path.splitext(terminal_arguments[2])[0], "output/godunov_upwind_results", True, x_len, break_pos, g, cells, riemann_int, riemann_str, tolerance, iterations, t_end, h_l, u_l, psi_l, h_r, u_r, psi_r)
+    (_,_) = godunov_entire_domain(False, out_file, os.path.splitext(terminal_arguments[2])[0], "output/godunov_upwind_results", True, x_len, break_pos, g, cells, riemann_int, riemann_str, tolerance, iterations, t_end, np.array([h_l, u_l, psi_l]), np.array([h_r, u_r, psi_r]))
 
 if __name__ == '__main__':
     main(sys.argv)

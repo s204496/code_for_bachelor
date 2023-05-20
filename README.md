@@ -5,9 +5,9 @@ There are multiple different files, here is a describtion of the content of each
 ## Requirements
 
 You need the following python packages to be able to run the project
-1. tabulate:   ```pip install tabulate```
-2. matplotlib: ```pip install matplotlib```
-3. numpy:      ```pip install numpy```
+1. matplotlib: ```pip install matplotlib```
+2. numpy:      ```pip install numpy```
+3. pandas:     ```pip install pandas```
 
 ## Directory: exact_Riemann_solver
 
@@ -58,3 +58,5 @@ The last plot in the file shows the global order of accuracy for both the Upwind
 
 This file shows how to solve the Riemann problem for the constant coefficient system $q_t+Aq_x=0$, where A is a 2 by 2 matrix that is diagonalizble. We get the two waves speed, and the state that is left in between the two waves. 
 
+### References to Toro 
+In the code comments, which are references to the book "Shock-Capturing Methods for Free-Surface Shallow Flows" by Eleuterio F. Toro - 2001. These reference will look like (Toro (x.x) - page xxx), where the x's are equation number and page number.
