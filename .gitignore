@@ -4,6 +4,15 @@ __pycache__/
 /SWE/.vscode/
 /exact_riemann_solver/.vscode/
 /SWE/sample_exact_solution/.vscode/
-/SWE/output/*/*
+/SWE/output/exact_solutions/*
+/SWE/output/godunov_upwind_results/*
+/SWE/output/lax_friedrich_results/*
+/SWE/output/speed_and_accuracy/*
+/SWE/output/TVD_WAF_results/*
+!/SWE/output/exact_solutions/.gitkeep
+!/SWE/output/godunov_upwind_results/.gitkeep
+!/SWE/output/lax_friedrich_results/.gitkeep
+!/SWE/output/speed_and_accuracy/.gitkeep
+!/SWE/output/TVD_WAF_results/.gitkeep
 /SWE/Data_driven/Generated_Data/*
 !/SWE/Data_driven/Generated_Data/.gitkeep
