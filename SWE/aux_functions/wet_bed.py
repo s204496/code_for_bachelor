@@ -2,11 +2,12 @@ import math
 from aux_functions import newton_raphson, f
 
 """ 
-Purpose of this function is to solve the Riemann problem, to the given precision for the wet bed case
+Purpose of this function is to solve the Riemann problem, to the given precision for the wet bed case,
 The method calculates h_s, u_s and a_s. 
 First it calculates an initial guess and then uses the iterative method newton_raphson, to find h_s.
 u_s and a_s can be calculated in closed form, once h_s is known. 
 """
+
 def calculate(g, tolerance, iterations, h_l, u_l, a_l, h_r, u_r, a_r):
     h_0 = newton_raphson.initial_guess(g, h_l, u_l, a_l, h_r, u_r, a_r)
     h_s = newton_raphson.newton_rapson_iter(g, h_0, h_l, u_l, a_l, h_r, u_r, a_r, tolerance, iterations)
