@@ -7,12 +7,14 @@ __pycache__/
 /SWE/output/exact_solutions/*
 /SWE/output/godunov_upwind_results/*
 /SWE/output/lax_friedrich_results/*
-/SWE/output/speed_and_accuracy/*
 /SWE/output/tvd_waf_results/*
 !/SWE/output/exact_solutions/.gitkeep
 !/SWE/output/godunov_upwind_results/.gitkeep
 !/SWE/output/lax_friedrich_results/.gitkeep
 !/SWE/output/tvd_waf_results/.gitkeep
+/SWE/output/speed_and_accuracy/godunov_upwind/*
+/SWE/output/speed_and_accuracy/lax_friedrich/*
+/SWE/output/speed_and_accuracy/tvd_waf/*
 !/SWE/output/speed_and_accuracy/godunov_upwind/.gitkeep
 !/SWE/output/speed_and_accuracy/lax_friedrich/.gitkeep
 !/SWE/output/speed_and_accuracy/tvd_waf/.gitkeep
