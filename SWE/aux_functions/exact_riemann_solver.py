@@ -4,7 +4,7 @@ from aux_functions import f, wet_bed, sampler
 
 """ 
 This Riemann solver takes in a single point s_t_ratio, usually 0, and gives return a quadruple of 
-1: A bool describing, whether or not one of the side or the star region is dry
+1: A bool describing, whether or not one of the sides or the star region is dry
 2: The h, u, psi at the given s_t_ratio, remeber similarty solution along x/t. This is a numpy array of floats
 3: The Flux at the given s_t_ratio, this is calculated from the h, u and psi variables. This is a numpy array of 3 floats
 4: A tuple of floats, for h and u in the star region, these are set to 0.0, whenever there is a dry/wet front. 

@@ -11,10 +11,12 @@ import matplotlib.pyplot as plt
 sys.path.append('../SWE')
 from aux_functions import file_manipulation, discritization, plotter, sampler
 
-# This is for the single sample case which is used to train the FFNN
-#def godunov_single_sample():
-#
-def godunov_entire_domain(bool_store_data, out_file, out_name, out_dir, bool_plot, x_len, break_pos, g, cells, riemann_int, riemann_str, tolerance, iterations, t_end, W_l, W_r):
+# Get a single sample returning the time step and result of a single time-step
+def single_sample():
+    return "shit"
+
+# Applies the numerical schemes to the entire domain from t=0 to t=t_end
+def entire_domain(out_name, out_dir, bool_plot, x_len, break_pos, g, cells, riemann_int, riemann_str, tolerance, iterations, t_end, W_l, W_r):
     #discritization of the domain
     (U,W) = discritization.discretize_initial_values(x_len, cells, break_pos, W_l, W_r)
     CFL = 0.9
@@ -34,7 +36,7 @@ def godunov_entire_domain(bool_store_data, out_file, out_name, out_dir, bool_plo
     if (bool_plot):
         # calculate the exact solution
         exact_data = sampler.sample_exact(break_pos, x_len, t_end, cells, g, W_l, W_r, tolerance, iterations)
-        plotter.plot(out_name, out_dir, x_len, t_end, cells, (True, False), np.array(exact_data), 0, np.array(W), riemann_str)
+        plotter.plot(out_name, out_dir, x_len, t_end, cells, (True, False), exact_data, 0, W, riemann_str)
     return (U, W)
 
 def main(terminal_arguments):
@@ -46,28 +48,21 @@ def main(terminal_arguments):
         sys.exit(1)
     (x_len, break_pos, g, cells, tolerance, iterations, t_end, h_l, u_l, psi_l, h_r, u_r, psi_r) = file_manipulation.extract(read_file) 
 
-    #open the file writen to
-    try:
-        #this creates the file if it does not exist, and overwrites it if it does
-        out_file = open('output/godunov_upwind_results/' + terminal_arguments[2], 'w')
-    except:
-        print('Could not find output file, please specify the output file as second argument')
-        sys.exit(1)
-    if not (len(terminal_arguments) == 4):
-        print('Please specify the Riemann solver to use as third argument, and provide no more than 3 arguments (input file, output file and solver)')
+    if not (len(terminal_arguments) == 3):
+        print('Please specify the Riemann solver to use as second argument, and provide no more than 2 arguments (input file and solver)')
         sys.exit(1)
     else:
-        riemann_str = terminal_arguments[3]
+        riemann_str = terminal_arguments[2]
         riemann_int = 0 # 0 = exact, 1 = HLLC
         if (riemann_str == 'exact'):
             pass
-        elif (riemann_str == 'HLLC'):
+        elif (riemann_str == 'hllc'):
             riemann_int = 1
         else:
-            print('Please specify exact or HLLC as third argument. To choose the used riemann solver')
+            print('Please specify \'exact\' or \'hllc\' as second argument. To choose the used riemann solver')
             sys.exit(1)
     
-    (_,_) = godunov_entire_domain(False, out_file, os.path.splitext(terminal_arguments[2])[0], "output/godunov_upwind_results", True, x_len, break_pos, g, cells, riemann_int, riemann_str, tolerance, iterations, t_end, np.array([h_l, u_l, psi_l]), np.array([h_r, u_r, psi_r]))
+    (_,_) = entire_domain(os.path.splitext(terminal_arguments[1])[0], "output/godunov_upwind_results/" + riemann_str, True, x_len, break_pos, g, cells, riemann_int, riemann_str, tolerance, iterations, t_end, np.array([h_l, u_l, psi_l]), np.array([h_r, u_r, psi_r]))
 
 if __name__ == '__main__':
     main(sys.argv)
