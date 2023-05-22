@@ -12,10 +12,10 @@ import matplotlib.pyplot as plt
 
 # Get a single sample returning the time step and result of a single time-step
 def single_sample(solver, tolerance, iterations, dx, cfl, g, W, U):
-    (dt, boundary_fluxes) = discritization.flux_at_boundaries(W, g, 1, solver, dx, tolerance, iteration, cfl)
-    waf_fluxes = discritization.flux_waf_tvd(W, g, solver, 1, dt, dx, boundary_fluxes, tolerance, iteration)
-    discritization.evolve(U, fluxes, dx, dt, 1)
-    return (dt, U)
+    (dt, boundary_fluxes) = discritization.flux_at_boundaries(W, g, 5, solver, dx, tolerance, iterations, cfl)
+    waf_fluxes = discritization.flux_waf_tvd(W, g, solver, 5, dt, dx, boundary_fluxes, tolerance, iterations)
+    discritization.evolve(U, waf_fluxes, dx, dt, 5)
+    return (dt, U[3])
 
 # Applies the numerical schemes to the entire domain from t=0 to t=t_end
 def entire_domain(out_name, out_dir, bool_plot, x_len, break_pos, g, cells, riemann_int, riemann_str, tolerance, iterations, t_end, W_l, W_r):

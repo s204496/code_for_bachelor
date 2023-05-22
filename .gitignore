@@ -24,3 +24,4 @@ __pycache__/
 !/SWE/output/speed_and_accuracy/tvd_waf/hllc/.gitkeep
 /SWE/data_driven/generated_data/*
 !/SWE/data_driven/generated_data/.gitkeep
+.pytest_cache/

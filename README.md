@@ -5,9 +5,12 @@ There are multiple different files, here is a describtion of the content of each
 ## Requirements
 
 You need the following python packages to be able to run the project
-1. matplotlib: ```pip install matplotlib```
-2. numpy:      ```pip install numpy```
-3. pandas:     ```pip install pandas```
+1. matplotlib:      ```pip install matplotlib```
+2. numpy:           ```pip install numpy```
+3. pandas:          ```pip install pandas```
+4. pytest           ```pip install pytest```
+5. pytest-coverage  ```pip install pytest-cov```
+6. pytorch          ```pip install torch```
 
 ## Directory: exact_Riemann_solver
 
@@ -35,6 +38,12 @@ python `exact_riemann_solver/main.py test1.txt output.txt
 ```
 
 Which will read from ```exact_riemann_solver/input/test1.txt``` and write to ```exact_riemann_solver/data/output.txt```
+
+## Testing
+
+With the pytest installed and the local path to the bin file, you should be able to run the unit tests in the following manner:
+
+```pytest```
 
 #### **parameters of input file**
 1. adskfj

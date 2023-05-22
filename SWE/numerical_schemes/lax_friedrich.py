@@ -13,10 +13,10 @@ import matplotlib.pyplot as plt
 
 # Get a single sample returning the time step and result of a single time-step
 def single_sample(dx, cfl, g, W, U):
-    dt = discritization.center_dt(W, dx, 1, g, cfl)
-    lax_flux = discritization.flux_lax_friedrich(W, U, dx, 1, g, dt)
-    discritization.evolve(U, lax_flux, dx, dt, 1)
-    return (dt, U)
+    dt = discritization.center_dt(W, dx, 3, g, cfl)
+    lax_flux = discritization.flux_lax_friedrich(W, U, dx, 3, g, dt)
+    discritization.evolve(U, lax_flux, dx, dt, 3)
+    return (dt, U[1])
 
 # Applies the numerical schemes to the entire domain from t=0 to t=t_end
 def entire_domain(out_name, out_dir, bool_plot, x_len, break_pos, g, cells, tolerance, iterations, t_end, W_l, W_r):

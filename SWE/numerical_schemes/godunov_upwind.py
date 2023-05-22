@@ -13,9 +13,9 @@ from aux_functions import file_manipulation, discritization, plotter, sampler
 
 # Get a single sample returning the time step and result of a single time-step
 def single_sample(solver, tolerance, iterations, dx, cfl, g, W, U):
-    (dt, fluxes) = discritization.flux_at_boundaries(W, g, 1, solver, dx, tolerance, iteration, cfl)
-    discritization.evolve(U, fluxes, dx, dt, 1)
-    return (dt, U)
+    (dt, fluxes) = discritization.flux_at_boundaries(W, g, 3, solver, dx, tolerance, iteration, cfl)
+    discritization.evolve(U, fluxes, dx, dt, 3)
+    return (dt, U[1])
 
 # Applies the numerical schemes to the entire domain from t=0 to t=t_end
 def entire_domain(out_name, out_dir, bool_plot, x_len, break_pos, g, cells, riemann_int, riemann_str, tolerance, iterations, t_end, W_l, W_r):
