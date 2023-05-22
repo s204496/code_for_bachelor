@@ -4,9 +4,8 @@ import numpy as np
 from aux_functions import f,exact_riemann_solver, hllc_riemann
 
 # Computes the Lax-Friedrichs fluxes at the cell boundaries (see. Toro (9.29) - page 163)
-def flux_lax_friedrich(W, U, x_len, cells, g, dt):
+def flux_lax_friedrich(W, U, dx, cells, g, dt):
     fluxes_cells = np.empty([cells+2, 3])
-    dx = x_len/cells
     for i in range(cells+2):
         # If statement is just an edge case, to avoid division by zero due to float inaccuracy, happens when number of cells is very large
         if (W[i,0] <= 0): 
@@ -17,10 +16,9 @@ def flux_lax_friedrich(W, U, x_len, cells, g, dt):
     return fluxes_at_boundaries 
 
 # Computes the dt for the Lax-friedrichs scheme, not depend on Riemann solvers
-def center_dt(W, x_len, cells, g, cfl):
+def center_dt(W, dx, cells, g, cfl):
     S_max = -1.0
-    dx = x_len/cells
-    for i in range(1,cells+1):
+    for i in range(cells+2):
         S = abs(W[i,1]) + math.sqrt(g*W[i,0])
         if(S_max < S):
             S_max = S
@@ -34,10 +32,10 @@ def W_from_U(U, W):
     W[~mask,:] = 0.0
 
 # Computes the initial values of U and W, for 1D dame break propblem, U is conservative variables, W is primitive variables
-def discretize_initial_values(x_len, cells, break_pos, W_l, W_r):
+def discretize_initial_values(dx, cells, break_pos, W_l, W_r):
     U, W = np.empty([cells+2, 3]), np.empty([cells+2, 3])
     for i in range(cells): 
-        x_i = i*x_len/cells
+        x_i = (i+0.5)*dx
         if(x_i < break_pos):
             U[i+1] = np.array([W_l[0], W_l[0]*W_l[1], W_l[0]*W_l[2]])
             W[i+1] = np.array([W_l[0], W_l[1], W_l[2]])
@@ -49,13 +47,12 @@ def discretize_initial_values(x_len, cells, break_pos, W_l, W_r):
     return (U,W)
 
 # Formular (Toro (8.8) - page 143)
-def evolve(U, fluxes, x_len, delta_t, cells):
-    delta_x = x_len/cells
+def evolve(U, fluxes, delta_x, delta_t, cells):
     U[1:-1,:] = U[1:-1,:] - (delta_t/delta_x)*(fluxes[1:,:] - fluxes[0:-1,:])
     U[0,:], U[cells+1,:] = U[1,:], U[cells,:] 
 
 # Computes the fluxes at the cell boundaries and dt based on (9.19 & 9.21 page 157-158)
-def flux_at_boundaries(W, g, cells, solver, x_len, tolerance, iteration, CFL): 
+def flux_at_boundaries(W, g, cells, solver, dx, tolerance, iteration, CFL): 
     S_max, boundary_flux = -1.0, np.empty([cells+1, 3])
     for i in range(cells+1):
         dry_bool_c = False
@@ -77,8 +74,7 @@ def flux_at_boundaries(W, g, cells, solver, x_len, tolerance, iteration, CFL):
             max_dry_speed = max(abs(s_sr), abs(s_hr), abs(s_sl), abs(s_hl))
             if(S_max < max_dry_speed):
                 S_max = max_dry_speed 
-    delta_x = x_len/cells
-    delta_t = CFL*delta_x/S_max
+    delta_t = CFL*dx/S_max
     return (delta_t, boundary_flux)
 
 """ This function returns (S_type, wave_speeds, h_s, u_s, boundary_w), used in the TVD-WAF scheme

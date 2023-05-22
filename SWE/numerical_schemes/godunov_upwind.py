@@ -12,26 +12,29 @@ sys.path.append('../SWE')
 from aux_functions import file_manipulation, discritization, plotter, sampler
 
 # Get a single sample returning the time step and result of a single time-step
-def single_sample():
-    return "shit"
+def single_sample(solver, tolerance, iterations, dx, cfl, g, W, U):
+    (dt, fluxes) = discritization.flux_at_boundaries(W, g, 1, solver, dx, tolerance, iteration, cfl)
+    discritization.evolve(U, fluxes, dx, dt, 1)
+    return (dt, U)
 
 # Applies the numerical schemes to the entire domain from t=0 to t=t_end
 def entire_domain(out_name, out_dir, bool_plot, x_len, break_pos, g, cells, riemann_int, riemann_str, tolerance, iterations, t_end, W_l, W_r):
     #discritization of the domain
-    (U,W) = discritization.discretize_initial_values(x_len, cells, break_pos, W_l, W_r)
+    dx = x_len/cells
+    (U,W) = discritization.discretize_initial_values(dx, cells, break_pos, W_l, W_r)
     CFL = 0.9
     t = 0
     end = False
     while t < t_end and not(end):
         #calculate the time step
-        (delta_t, fluxes) = discritization.flux_at_boundaries(W, g, cells, riemann_int, x_len, tolerance, iterations, CFL)
+        (delta_t, fluxes) = discritization.flux_at_boundaries(W, g, cells, riemann_int, dx, tolerance, iterations, CFL)
         if (delta_t + t > t_end):
             delta_t = t_end - t
             t = t + delta_t
             end = True
         else: 
             t = t + delta_t
-        discritization.evolve(U, fluxes, x_len, delta_t, cells) # using (8.8) page 143 Toro
+        discritization.evolve(U, fluxes, dx, delta_t, cells) # using (8.8) page 143 Toro
         discritization.W_from_U(U, W)
     if (bool_plot):
         # calculate the exact solution

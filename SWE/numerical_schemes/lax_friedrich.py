@@ -8,25 +8,34 @@ import sys
 import os
 import numpy as np
 sys.path.append('../SWE')
-from aux_functions import file_manipulation, discritization, plotter, sampler
+from aux_functions import file_manipulation, discritization, plotter, sampler, f
 import matplotlib.pyplot as plt
 
-def lax_friedrich(out_name, out_dir, bool_plot, x_len, break_pos, g, cells, tolerance, iterations, t_end, W_l, W_r):
+# Get a single sample returning the time step and result of a single time-step
+def single_sample(dx, cfl, g, W, U):
+    dt = discritization.center_dt(W, dx, 1, g, cfl)
+    lax_flux = discritization.flux_lax_friedrich(W, U, dx, 1, g, dt)
+    discritization.evolve(U, lax_flux, dx, dt, 1)
+    return (dt, U)
+
+# Applies the numerical schemes to the entire domain from t=0 to t=t_end
+def entire_domain(out_name, out_dir, bool_plot, x_len, break_pos, g, cells, tolerance, iterations, t_end, W_l, W_r):
     #discritization of the domain
-    (U,W) = discritization.discretize_initial_values(x_len, cells, break_pos, W_l, W_r)
+    dx = x_len/cells
+    (U,W) = discritization.discretize_initial_values(dx, cells, break_pos, W_l, W_r)
     CFL = 0.9
     t = 0
     end = False
     while t < t_end and not(end):
         #calculate the time step
-        delta_t = discritization.center_dt(W, x_len, cells, g, CFL)
+        delta_t = discritization.center_dt(W, dx, cells, g, CFL)
         if (delta_t + t > t_end):
             delta_t = t_end - t
             end = True
         else: 
             t = t + delta_t
-        lax_flux = discritization.flux_lax_friedrich(W, U, x_len, cells, g, delta_t)
-        discritization.evolve(U, lax_flux, x_len, delta_t, cells) # using (8.8) page 143 Toro
+        lax_flux = discritization.flux_lax_friedrich(W, U, dx, cells, g, delta_t)
+        discritization.evolve(U, lax_flux, dx, delta_t, cells) # using (8.8) page 143 Toro
         discritization.W_from_U(U, W)
     if (bool_plot):
         # calculate the exact solution
@@ -42,7 +51,7 @@ def main(terminal_arguments):
         print('Could not find input file, please remeber to execute the program from the root folder and specify the input file as first argument')
         sys.exit(1)
     (x_len, break_pos, g, cells, tolerance, iterations, t_end, h_l, u_l, psi_l, h_r, u_r, psi_r) = file_manipulation.extract(read_file) 
-    (_,_) = lax_friedrich(os.path.splitext(terminal_arguments[1])[0], "output/lax_friedrich_results", True, x_len, break_pos, g, cells, tolerance, iterations, t_end, np.array([h_l, u_l, psi_l]), np.array([h_r, u_r, psi_r]))
+    (_,_) = entire_domain(os.path.splitext(terminal_arguments[1])[0], "output/lax_friedrich_results", True, x_len, break_pos, g, cells, tolerance, iterations, t_end, np.array([h_l, u_l, psi_l]), np.array([h_r, u_r, psi_r]))
 
 if __name__ == '__main__':
     main(sys.argv)
