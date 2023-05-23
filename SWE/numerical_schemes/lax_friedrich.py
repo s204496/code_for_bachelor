@@ -16,7 +16,7 @@ def single_sample(dx, cfl, g, W, U):
     dt = discritization.center_dt(W, dx, 3, g, cfl)
     lax_flux = discritization.flux_lax_friedrich(W, U, dx, 3, g, dt)
     discritization.evolve(U, lax_flux, dx, dt, 3)
-    return (dt, U[1])
+    return (dt, U[2])
 
 # Applies the numerical schemes to the entire domain from t=0 to t=t_end
 def entire_domain(out_name, out_dir, bool_plot, x_len, break_pos, g, cells, tolerance, iterations, t_end, W_l, W_r):

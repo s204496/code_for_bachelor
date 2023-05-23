@@ -77,6 +77,7 @@ def main(argv):
     tolerance = 1e-7
     cfl = 0.9
 
+    ####!!!! fix the fact that u can never be negative
     for i in range(samples):
         cells = np.random.choice(sizes)
         dx = x_len/cells

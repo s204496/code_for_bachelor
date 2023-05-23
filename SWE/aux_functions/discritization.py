@@ -12,8 +12,8 @@ def flux_lax_friedrich(W, U, dx, cells, g, dt):
             fluxes_cells[i] = np.array([0.0, 0.0, 0.0])
         else:
             fluxes_cells[i] = f.flux_from_w(W[i], g)
-    fluxes_at_boundaries = np.array([(0.5*(fluxes_cells[i] + fluxes_cells[i+1]) + 0.5*(dx/dt)*(U[i]-U[i+1])) for i in range(cells+1)])
-    return fluxes_at_boundaries 
+    lax_flux_boundaries = np.array([(0.5*(fluxes_cells[i] + fluxes_cells[i+1]) + 0.5*(dx/dt)*(U[i]-U[i+1])) for i in range(cells+1)])
+    return lax_flux_boundaries 
 
 # Computes the dt for the Lax-friedrichs scheme, not depend on Riemann solvers
 def center_dt(W, dx, cells, g, cfl):
