@@ -3,21 +3,35 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # This function plots and saves the numerical solution at time t_end toghter with the exact solution.
-def make_plot(out_plot_name, out_path, x_center, x_interval, t_end, tuple_bool_exact_scatter, exact_data, scheme, numerical_data, figuare, ax, riemann_str, h_u_psi_str, fig_name):
+def make_plot(out_plot_name, out_path, x_center, x_interval, t_end, tuple_bool_exact_scatter, exact_data, scheme, numerical_data, figuare, ax, riemann_str, h_u_psi_str, fig_name, data_driven):
     mpl.rcParams['font.size'] = mpl.rcParams['font.size']*0.8 
     if scheme >= 0:
-        ax.hlines(numerical_data[1:-1], x_interval[0:-1], x_interval[1:], colors=['black'], linewidth=1.0, label='numerical solution')
+        if data_driven:
+            ax.hlines(numerical_data[1:-1], x_interval[0:-1], x_interval[1:], colors=['black'], linewidth=1.0, label='data driven solution')
+        else:
+            ax.hlines(numerical_data[1:-1], x_interval[0:-1], x_interval[1:], colors=['black'], linewidth=1.0, label='numerical solution')
     if tuple_bool_exact_scatter[0]:
         ax.plot(x_center, exact_data, linewidth=0.5, label='exact solution')
         if (tuple_bool_exact_scatter[1]):
             ax.scatter(x_center, exact_data, marker='o', facecolors='white', color='k', s=1, label='exact solution points')
             figuare.suptitle(h_u_psi_str + ", exact solution at t = " + str(t_end) + " to " + out_plot_name, y = 0.93, fontsize=9.5)
     if scheme == 0: # godunov upwind method
-        figuare.suptitle(h_u_psi_str + ", at t = " + str(t_end) + ", " + out_plot_name + " using Godunov upwind, and " + riemann_str + " Riemann solver", y = 0.93, fontsize=9.5)
+        if data_driven == 1:
+            figuare.suptitle(h_u_psi_str + ", at t = " + str(t_end) + ", " + out_plot_name + " using Godunov upwind, CNN on " + riemann_str + " Riemann Data", y = 0.93, fontsize=9.5)
+        elif data_driven == 2:
+            figuare.suptitle(h_u_psi_str + ", at t = " + str(t_end) + ", " + out_plot_name + " using Godunov upwind, FFNN on " + riemann_str + " Riemann Data", y = 0.93, fontsize=9.5)
+        else:
+            figuare.suptitle(h_u_psi_str + ", at t = " + str(t_end) + ", " + out_plot_name + " using Godunov upwind, and " + riemann_str + " Riemann solver", y = 0.93, fontsize=9.5)
     if scheme == 1: # lax-friedrichs
-        figuare.suptitle(h_u_psi_str + ", at t = " + str(t_end) + ", " + out_plot_name + " using Lax-Friedrich", y = 0.93, fontsize=9.5)
+        if data_driven:
+            figuare.suptitle(h_u_psi_str + ", at t = " + str(t_end) + ", " + out_plot_name + " using Lax-Friedrich, Data-driven", y = 0.93, fontsize=9.5)
+        else:
+            figuare.suptitle(h_u_psi_str + ", at t = " + str(t_end) + ", " + out_plot_name + " using Lax-Friedrich", y = 0.93, fontsize=9.5)
     if scheme == 2: # WAF scheme 
-        figuare.suptitle(h_u_psi_str + ", at t = " + str(t_end) + ", " + out_plot_name + " using WAF, and " + riemann_str + " Riemann solver", y = 0.93, fontsize=9.5)
+        if data_driven:
+            figuare.suptitle(h_u_psi_str + ", at t = " + str(t_end) + ", " + out_plot_name + " using WAF, Data-driven", y = 0.93, fontsize=9.5)
+        else:
+            figuare.suptitle(h_u_psi_str + ", at t = " + str(t_end) + ", " + out_plot_name + " using WAF, and " + riemann_str + " Riemann solver", y = 0.93, fontsize=9.5)
     ax.set_ylabel(h_u_psi_str, fontsize=8)
     ax.tick_params(axis='y', labelsize=8)
     ax.set_xlabel("x", fontsize=8)
@@ -31,7 +45,7 @@ def make_plot(out_plot_name, out_path, x_center, x_interval, t_end, tuple_bool_e
     plt.savefig(out_path + '/' + fig_name + out_plot_name + riemann_str + ".png", dpi=300)
 
 # This method plots the numerical and exact solution for h, u, and psi in 3 different plots by calling make_plot
-def plot(out_plot_name, out_path, x_len, t_end, cells, tuple_bool_exact_scatter, exact_data, scheme, numerical_data, riemann_str):
+def plot(out_plot_name, out_path, x_len, t_end, cells, tuple_bool_exact_scatter, exact_data, scheme, numerical_data, riemann_str, data_driven):
     figure, ax = plt.subplots(1,1)
     dx = x_len/cells
     x_center = np.linspace(dx, dx*cells, cells)
@@ -50,9 +64,9 @@ def plot(out_plot_name, out_path, x_len, t_end, cells, tuple_bool_exact_scatter,
         else:
             fig_name = "psi(x)"
         if np.any(numerical_data):
-            make_plot(out_plot_name, out_path, x_center, x_interval, t_end, tuple_bool_exact_scatter, exact_data[:,i], scheme, numerical_data[:,i], figure, ax, riemann_str, temp_str, fig_name)
+            make_plot(out_plot_name, out_path, x_center, x_interval, t_end, tuple_bool_exact_scatter, exact_data[:,i], scheme, numerical_data[:,i], figure, ax, riemann_str, temp_str, fig_name, data_driven)
         else:
-            make_plot(out_plot_name, out_path, x_center, x_interval, t_end, tuple_bool_exact_scatter, exact_data[:,i], scheme, numerical_data, figure, ax, riemann_str, temp_str, fig_name)
+            make_plot(out_plot_name, out_path, x_center, x_interval, t_end, tuple_bool_exact_scatter, exact_data[:,i], scheme, numerical_data, figure, ax, riemann_str, temp_str, fig_name, data_driven)
         ax.clear()
         
 # Make a 2x2 plot for error of h, u, and psi, and speed of computation

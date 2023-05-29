@@ -1,5 +1,5 @@
 import sys
-sys.path.append('../SWE')
+sys.path.append('../../SWE')
 import numpy as np
 import pandas as pd
 import random

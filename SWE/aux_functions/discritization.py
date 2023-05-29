@@ -2,9 +2,10 @@ import math
 import sys
 import numpy as np
 from aux_functions import f,exact_riemann_solver, hllc_riemann
+from data_driven.aux_function import riemann_aux, lax_godunov_flux_aux
 
 # Computes the Lax-Friedrichs fluxes at the cell boundaries (see. Toro (9.29) - page 163)
-def flux_lax_friedrich(W, U, dx, cells, g, dt):
+def flux_lax(W, U, dx, cells, g, dt):
     fluxes_cells = np.empty([cells+2, 3])
     for i in range(cells+2):
         # If statement is just an edge case, to avoid division by zero due to float inaccuracy, happens when number of cells is very large
@@ -15,13 +16,14 @@ def flux_lax_friedrich(W, U, dx, cells, g, dt):
     lax_flux_boundaries = np.array([(0.5*(fluxes_cells[i] + fluxes_cells[i+1]) + 0.5*(dx/dt)*(U[i]-U[i+1])) for i in range(cells+1)])
     return lax_flux_boundaries 
 
+# Computes the Lax-Friedrichs fluxes with data driven method
+def flux_lax_data_driven(W, U, dx, g, dt, model, data_driven_model):
+    fluxes = lax_godunov_flux_aux.compute(model, W[:-1,:], W[1:,:], dx, dt, data_driven_model) 
+    return fluxes 
+
 # Computes the dt for the Lax-friedrichs scheme, not depend on Riemann solvers
-def center_dt(W, dx, cells, g, cfl):
-    S_max = -1.0
-    for i in range(cells+2):
-        S = abs(W[i,1]) + math.sqrt(g*W[i,0])
-        if(S_max < S):
-            S_max = S
+def center_dt(W, dx, g, cfl):
+    S_max = np.max(np.abs(W[:,1]) + np.sqrt(g*W[:,0]))
     return cfl*dx/S_max
 
 # This method overwrites the content of W based on U
@@ -29,6 +31,14 @@ def W_from_U(U, W):
     mask = U[:,0] > 0.0000000
     W[mask,0] = U[mask,0]
     W[mask,1:3] = U[mask,1:3]/U[mask,0].reshape(-1,1)
+    W[~mask,:] = 0.0
+
+# This method overwrites the content of U based on W
+def U_from_W(U, W): 
+    mask = W[:,0] > 0.0000000
+    U[mask,0] = W[mask,0]
+    U[mask,1] = W[mask,1]*W[mask,0]
+    U[mask,2] = W[mask,2]*W[mask,0]
     W[~mask,:] = 0.0
 
 # Computes the initial values of U and W, for 1D dame break propblem, U is conservative variables, W is primitive variables
@@ -77,6 +87,14 @@ def flux_at_boundaries(W, g, cells, solver, dx, tolerance, iteration, CFL):
     delta_t = CFL*dx/S_max
     return (delta_t, boundary_flux)
 
+def flux_at_boundaries_data_driven(W, g, cells, dx, CFL, model, data_driven_model): 
+    S_max, boundary_flux = -1.0, np.empty([cells+1, 3])
+    Wb = riemann_aux.compute(model, W[:-1,:], W[1:,:], data_driven_model) 
+    S_max = np.max(np.absolute(W[:,1]) + np.sqrt(g*W[:,0]))
+    fluxes = np.array([Wb[:,0]*Wb[:,1], Wb[:,0]*(Wb[:,1]**2) + 0.5*g*Wb[:,0]**2, Wb[:,0]*Wb[:,1]*Wb[:,2]]).transpose()
+    delta_t = CFL*dx/S_max
+    return (delta_t, fluxes)
+
 """ This function returns (S_type, wave_speeds, h_s, u_s, boundary_w), used in the TVD-WAF scheme
 u_s, h_s is the values in the star region. Boundary_w is the primite values at the interfaces.
 The wave_speeds, is an array of 3 values, the speed of each wave, note that some type of wave patterns do not have 3 different waves. 
@@ -93,6 +111,7 @@ S_type, described what types of waves we are dealing with. Each of the 11 possib
 9 = Wet bed, shock-rarefaction wave_speeds[0] is S_l, wave_speeds[1] is u_s, wave_speeds[2] is S_hr
 10 = wet bed, rarefaction-rarefaction wave_speeds[0] is S_hl, wave_speeds[1] is u_s, wave_speeds[2] is S_hr
 """
+
 def interface_wave_speeds(W_l, W_r, g, riemann_int, tolenrance, iterations):
     if np.all(W_l == W_r): # Case 0
         return (0, np.array([0.0, 0.0, 0.0]), W_l[0].item(), W_l[1].item(), W_l)
@@ -196,7 +215,6 @@ def super_bee_limiter(w_jumps_l, w_jumps_m, w_jumps_r, c):
     else:
         return 2*np.abs(c)-1 
         
-
 def flux_waf_tvd(W, g, riemann_int, cells, delta_t, delta_x, boundary_flux, tolenrance, iterations):
     S_type, S_array, h_u_s, boundary_w_array = np.empty(cells+1, dtype=int), np.empty((cells+1,3)), np.empty((cells+1,2)), np.empty((cells+1,3))
     n_waves_array, c, w_jumps, delta_flux, waf_flux = np.empty(cells+1, dtype=int), np.empty((cells+1,3)), np.empty((cells+1,3,3)), np.empty((cells+1,3,3)), np.empty((cells+1,3))
