@@ -120,3 +120,33 @@ def plot_error_and_speed(speed_data, error_data, delta_x_list, cells, out_plot_n
     else:     
         plt.savefig(out_path + '/' + scheme + "_" + out_plot_name + '_' + riemann_str + ".png", dpi=300)
 
+
+# Plotting the results of experiment 1 Riemann solver data driven models
+def plot_experiment_1(models):
+    colors = ['blue', 'green', 'red', 'purple', 'orange', 'brown']
+    line_styles = ['-', '-', '-', '-', '-', '-']
+    linewidth = 1 
+    titles = ['avg. MSE - loss', 'avg. Custom + MSE - loss', 'sum. MSE loss']
+
+    fig, axes = plt.subplots(3, 1, figsize=(8, 12))
+
+    model_labels = ['Shallow AP', 'Deep AP']
+    ap_indices = [0, 1]
+
+    for i in range(3):
+        for model_idx, model_label in zip(ap_indices, model_labels):
+            for j in range(3):
+                last_20 = np.mean(np.array(models[model_idx][j][i])[-150:-130])
+                last_20_formatted = '{:.3e}'.format(last_20)
+                
+                axes[i].plot(models[model_idx][j][i], color=colors[model_idx*3+j], linestyle=line_styles[model_idx*3+j], linewidth=linewidth, label=f'{model_label} {j}, mean20: {last_20_formatted}')
+        
+        axes[i].set_xlabel('Epochs')
+        axes[i].set_ylabel('Loss')
+        axes[i].set_yscale('log')
+        axes[i].legend()
+        axes[i].set_title(titles[i])
+
+    plt.tight_layout()
+    plt.savefig("output/data_driven_results/riemann_over_training.png")
+    plt.show()

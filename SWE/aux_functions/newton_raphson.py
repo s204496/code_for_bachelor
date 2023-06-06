@@ -40,10 +40,6 @@ def initial_guess(g, h_l, u_l, a_l, h_r, u_r, a_r):
     # if f(h_min) >= 0, then we have two rarefaction waves.
     h_s = (1/g)*((1/2*(a_l+a_r)-(1/4)*(u_r-u_l))**2)
     if f.f(g, h_min, h_l, u_l, h_r, u_r) >= 0:
-        # this is just to check that the definition given in book (Toro (5.3 & 5.4) - page 96), match up with condition (Toro (5.18) - page 100)
-        if not(0.0000001 >= h_s - h_min): 
-            print("Error, Mark A: The condition given in 5.18 and (5.3-5.4) does not match up, this should not happen")
-            sys.exit(1)
         return (1/g)*((1/2*(a_l+a_r)-(1/4)*(u_r-u_l))**2)
     #we are not in the two rarefaction case.
     else:

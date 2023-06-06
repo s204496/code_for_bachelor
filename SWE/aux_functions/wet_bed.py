@@ -12,7 +12,7 @@ def calculate(g, tolerance, iterations, h_l, u_l, a_l, h_r, u_r, a_r):
     h_0 = newton_raphson.initial_guess(g, h_l, u_l, a_l, h_r, u_r, a_r)
     h_s = newton_raphson.newton_rapson_iter(g, h_0, h_l, u_l, a_l, h_r, u_r, a_r, tolerance, iterations)
     if (h_s < 0):
-        h_s = 0.0001
+        h_s = 0.00001
     a_s = math.sqrt(g*h_s)
     f_l = f.f_k(g, h_s, h_l)
     f_r = f.f_k(g, h_s, h_r)

@@ -89,8 +89,37 @@ def flux_at_boundaries(W, g, cells, solver, dx, tolerance, iteration, CFL):
 
 def flux_at_boundaries_data_driven(W, g, cells, dx, CFL, model, data_driven_model): 
     S_max, boundary_flux = -1.0, np.empty([cells+1, 3])
-    Wb = riemann_aux.compute(model, W[:-1,:], W[1:,:], data_driven_model) 
+    h_s = riemann_aux.compute(model, W[:-1,0:-1], W[1:,0:-1], data_driven_model)
+    dry_prediction = h_s < 10e-9
+    h_s[dry_prediction] = 10e-9
+    #W_dry = W < 10e-4
+    #W[W_dry] = 10e-4
+    # closed form computations
+    W_l = W[:-1,:]
+    W_r = W[1:,:]
+    u_s = 1/2*(W_l[:,1] + W_r[:,1]) + 1/2*(f.f_k_numpy(g, h_s, W_r[:,0]) - f.f_k_numpy(g, h_s, W_l[:,0]))
     S_max = np.max(np.absolute(W[:,1]) + np.sqrt(g*W[:,0]))
+    # types of waves
+    right_shear = u_s > 0 # right going shear wave  
+    l_rarefaction1 = np.logical_and(h_s <= W_l[:,0], (u_s-np.sqrt(g*h_s)) < 0)
+    l_rarefaction2 = np.logical_and(h_s <= W_l[:,0], (W_l[:,1]-np.sqrt(g*W_l[:,0])) > 0)
+    l_sonic_rarefaction3 = np.logical_and(np.logical_and(h_s <= W_l[:,0], ~l_rarefaction1), ~l_rarefaction2)
+    l_shock_n = np.logical_and(h_s > W_l[:,0], (W_l[:,1]-np.sqrt(g*W_l[:,0])*np.sqrt(1/2*((h_s+W_l[:,0])*h_s/(W_l[:,0]**2))) < 0))  
+    l_shock_p = np.logical_and(h_s > W_l[:,0], ~l_shock_n)
+    r_rarefaction1 = np.logical_and(h_s <= W_r[:,0], (u_s+np.sqrt(g*h_s)) > 0)
+    r_rarefaction2 = np.logical_and(h_s <= W_r[:,0], (W[1:,1]+np.sqrt(g*W_r[:,0])) < 0)
+    r_sonic_rarefaction3 = np.logical_and(np.logical_and(h_s <= W_r[:,0], ~r_rarefaction1), ~r_rarefaction2)
+    r_shock_p = np.logical_and(h_s > W_r[:,0], W_r[:,1]+np.sqrt(g*W_r[:,0])*np.sqrt(1/2*((h_s+W_r[:,0])*h_s/(W_r[:,0]**2))) > 0)
+    r_shock_n = np.logical_and(h_s > W_r[:,0], ~r_shock_p)
+    # content of waves at the boundaries
+    Wb = np.empty([cells+1, 3])
+    Wb[right_shear & (l_rarefaction1 | l_shock_n)] = np.array([h_s[right_shear & (l_rarefaction1 | l_shock_n)], u_s[right_shear & (l_rarefaction1 | l_shock_n)], W_l[right_shear & (l_rarefaction1 | l_shock_n),2]]).T
+    Wb[right_shear & (l_rarefaction2 | l_shock_p)] = W_l[right_shear & (l_rarefaction2 | l_shock_p),:] 
+    Wb[right_shear & l_sonic_rarefaction3] = np.array([(((W_l[right_shear & l_sonic_rarefaction3,1]+2*np.sqrt(g*W_l[right_shear & l_sonic_rarefaction3,0]))/3)**2)/g, (W_l[right_shear & l_sonic_rarefaction3,1]+2*np.sqrt(g*W_l[right_shear & l_sonic_rarefaction3,0]))/3, W_l[right_shear & l_sonic_rarefaction3,2]]).T
+    Wb[~right_shear & (r_rarefaction1 | r_shock_p)] = np.array([h_s[~right_shear & (r_rarefaction1 | r_shock_p)], u_s[~right_shear & (r_rarefaction1 | r_shock_p)], W_r[~right_shear & (r_rarefaction1 | r_shock_p),2]]).T
+    Wb[~right_shear & (r_rarefaction2 | r_shock_n)] = W_r[~right_shear & (r_rarefaction2 | r_shock_n),:] 
+    Wb[~right_shear & r_sonic_rarefaction3] = np.array([(((2*np.sqrt(g*W_r[~right_shear & r_sonic_rarefaction3,0]) -W_r[~right_shear & r_sonic_rarefaction3,1])/3)**2)/g, (W_r[~right_shear & r_sonic_rarefaction3,1]-2*np.sqrt(g*W_r[~right_shear & r_sonic_rarefaction3,0]))/3, W_r[~right_shear & r_sonic_rarefaction3,2]]).T 
+    # fluxes
     fluxes = np.array([Wb[:,0]*Wb[:,1], Wb[:,0]*(Wb[:,1]**2) + 0.5*g*Wb[:,0]**2, Wb[:,0]*Wb[:,1]*Wb[:,2]]).transpose()
     delta_t = CFL*dx/S_max
     return (delta_t, fluxes)

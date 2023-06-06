@@ -10,34 +10,44 @@ from data_driven.aux_function import lax_godunov_flux_aux, riemann_aux
 from data_driven.ffnn import ffnn_lax_flux, ffnn_riemann 
 
 # Load the trained model
-def test(model, test_loader, device):
-    model.eval()
-    test_loss = 0.0
-    criterion = nn.MSELoss()
-
-    with torch.no_grad():
-        for inputs, labels in test_loader:
-            inputs, labels = inputs.to(device), labels.to(device)
-            outputs = model(inputs)
-            loss = criterion(outputs, labels)
-            test_loss += loss.item()
-
-    avg_test_loss = test_loss / len(test_loader)
-    print(f"Test loss: {avg_test_loss:.4f}")
-
-# Load the trained model
 def load_model(model_path, device, model_type):
     match model_type:
         case 'cnn_riemann':
             model = cnn_riemann.cnn_riemann().to(device)
         case 'ffnn_riemann':
-            model = ffnn_riemann.ffnn_riemann().to(device)
+            model = ffnn_riemann.ffnn_riemann_shallow().to(device)
         case 'cnn_flux':
             model = cnn_lax_flux.cnn_lax_flux().to(device)
         case 'ffnn_flux':
             model = ffnn_lax_flux.ffnn_lax_flux().to(device)
     model.load_state_dict(torch.load(model_path))
     return model
+
+# test the loaded model
+def test(model, test_loader, device, loss_type):
+    model.eval()
+    test_loss = 0.0
+    if loss_type == 0:
+        criterion = nn.MSELoss()
+    elif loss_type == 1:
+        criterion = riemann_aux.custom_loss() 
+
+    with torch.no_grad():
+        for inputs, labels in test_loader:
+            inputs, labels = inputs.to(device), labels.to(device)
+            outputs = model(inputs)
+            if loss_type == 0:
+                loss = criterion(outputs, labels)
+            elif loss_type == 1:
+                loss = criterion(outputs, inputs[:,0], inputs[:,1], inputs[:,2], inputs[:,3], labels)
+            else:
+                loss = torch.abs(outputs - labels).sum()
+            test_loss += loss.item()
+
+    if not(loss_type == 2):
+        return test_loss / len(test_loader)
+    else:
+        return test_loss
 
 # Create the data loaders
 def create_data_loaders_from_csv(path, batch_size, model_type):
@@ -66,6 +76,7 @@ def create_data_loaders_from_csv(path, batch_size, model_type):
     val_loader = DataLoader(val_dataset, batch_size=batch_size)
     test_loader = DataLoader(test_dataset, batch_size=batch_size)
     return train_loader, val_loader, test_loader
+
 
 
 

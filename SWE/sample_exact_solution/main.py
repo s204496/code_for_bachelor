@@ -19,7 +19,7 @@ def main(terminal_arguments):
     (x_len, break_pos, g, cells, tolerance, iterations, t_end, h_l, u_l, psi_l, h_r, u_r, psi_r) = file_manipulation.extract(read_file) 
 
     sol_data = sampler.sample_exact(break_pos, x_len, t_end, cells, g, np.array([h_l, u_l, psi_l]), np.array([h_r, u_r, psi_r]), tolerance, iterations)
-    plotter.plot(os.path.splitext(terminal_arguments[1])[0], 'output/exact_solutions', x_len, t_end, cells, (True, True), sol_data, -1, np.array([]), "")
+    plotter.plot(os.path.splitext(terminal_arguments[1])[0], 'output/exact_solutions', x_len, t_end, cells, (True, True), sol_data, -1, np.array([]), "", 0)
 
 if __name__ == '__main__':
     main(sys.argv)

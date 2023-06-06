@@ -6,7 +6,8 @@ Further there are auxiliary functions for finding:
 2. All possible wave speeds, when the is a dry/wet front.
 3. Calculating the flux from W
 """
-
+import torch
+import torch.nn as nn
 import math
 import numpy as np
 
@@ -16,15 +17,35 @@ def f(g, h, h_l, u_l, h_r, u_r):
 
 # Calculate the function f_k, where k is the left or right side of the interface
 def f_k(g, h, h_k):
-    #rarefaction left
+    #rarefaction
     if h <= h_k:
         return 2*(math.sqrt(h*g)-math.sqrt(h_k*g))
-    #shock left
+    #shock
     else:
         if (h < 10e-8 or h_k < 10e-8): # need this to take care of edge case where h or h_k is very small
             return 0.0
         else:
             return (h-h_k) * math.sqrt(1/2*g*((h+h_k)/(h*h_k)))
+
+def f_k_tensor(h, h_s, h_k):
+    valid = torch.relu(h)/torch.abs(h) # true wave condition 
+    rarefaction = torch.relu(h_k-h_s)/(torch.abs(h_k-h_s)+1e-10) # 1, when h_s <= h_k meaning rarefaction or 0 for shock shock condition
+    shock = torch.relu(h_s-h_k)/(torch.abs(h_s-h_k)+1e-10) # 0, when h_s <= h_k meaning rarefaction or 1 for shock shock condition
+    rarefaction_output = rarefaction * valid * 2 * (torch.sqrt(torch.abs(h) * 9.8 + 1e-10) - torch.sqrt(h_k * 9.8))
+    shock_output = shock * valid * (h - h_k) * torch.sqrt((1/2) * 9.8 * (torch.abs(h + h_k) / torch.abs(h * h_k)))
+    #shock_output = torch.where(valid_shock, h, torch.full_like(h, 1e-10))
+    return rarefaction_output + shock_output  # Add unsqueeze to ensure a 1-dimensional tensor is returned
+
+# Calculate the function f_k, where k is the left or right side of the interface
+def f_k_numpy(g, h, h_k):
+    #rarefaction
+    rarefaction_mask = h <= h_k 
+    mask_2 = np.logical_or(h_k < 10e-8, h < 10e-8)
+    f_k = np.zeros_like(h)
+    f_k[rarefaction_mask & ~mask_2] = 2*(np.sqrt(h[rarefaction_mask & ~mask_2]*g)-np.sqrt(h_k[rarefaction_mask & ~mask_2]*g)) 
+    f_k[~rarefaction_mask & ~mask_2] = (h[~rarefaction_mask & ~mask_2] - h_k[~rarefaction_mask & ~mask_2])*np.sqrt(1/2*g*((h[~rarefaction_mask & ~mask_2]+h_k[~rarefaction_mask & ~mask_2])/(h[~rarefaction_mask & ~mask_2]*h_k[~rarefaction_mask & ~mask_2]))) 
+    f_k[mask_2] = 10e-9
+    return f_k
 
 # Calculate the derivative of f_k
 def fkd(g, h_s, h_k, a_k):

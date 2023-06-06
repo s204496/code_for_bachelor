@@ -20,7 +20,7 @@ def single_sample(solver, tolerance, iterations, dx, cfl, g, W, U):
     return (dt, U[2])
 
 # Applies the numerical schemes to the entire domain from t=0 to t=t_end
-def entire_domain(out_name, out_dir, bool_plot, x_len, break_pos, g, cells, riemann_int, riemann_str, tolerance, iterations, t_end, W_l, W_r, data_driven):
+def entire_domain(out_name, out_dir, bool_plot, x_len, break_pos, g, cells, riemann_int, riemann_str, tolerance, iterations, t_end, W_l, W_r, data_driven, approach):
     model = None
     if data_driven == 1:
         if riemann_int == 0:
@@ -29,9 +29,9 @@ def entire_domain(out_name, out_dir, bool_plot, x_len, break_pos, g, cells, riem
             model = general_aux.load_model('data_driven/models/riemann_hllc_CNN.pt', 'cpu', 'cnn_riemann')
     elif data_driven == 2:
         if riemann_int == 0:
-            model = general_aux.load_model('data_driven/models/riemann_exact_FFNN.pt', 'cpu', 'ffnn_riemann') # CPU can be changed if one has a Nvidia GPU
+            model = general_aux.load_model('data_driven/models/riemann_exact_FFNN_shallow_approach' + str(approach) + '.pt', 'cpu', 'ffnn_riemann') # CPU can be changed if one has a Nvidia GPU
         else:
-            model = general_aux.load_model('data_driven/models/riemann_hllc_FFNN.pt', 'cpu', 'ffnn_riemann')
+            model = general_aux.load_model('data_driven/models/riemann_hllc_FFNN_shallow.pt', 'cpu', 'ffnn_riemann')
     #discritization of the domain
     dx = x_len/cells
     (U,W) = discritization.discretize_initial_values(dx, cells, break_pos, W_l, W_r)
@@ -67,8 +67,8 @@ def main(terminal_arguments):
         sys.exit(1)
     (x_len, break_pos, g, cells, tolerance, iterations, t_end, h_l, u_l, psi_l, h_r, u_r, psi_r) = file_manipulation.extract(read_file) 
 
-    if not (len(terminal_arguments) == 4):
-        print('Please specify the Riemann solver to use as second argument and whether or not data driven model should be used. \n Write \'exact\' or \'hllc\' For the solver \n for data driven model write \'0\' for schemes, \'1\' for datadriven CNN and \'2\' for FFNN, and provide no more than 3 arguments')
+    if not (len(terminal_arguments) == 5):
+        print('Please specify the Riemann solver to use as second argument and whether or not data driven model should be used. \n Write \'exact\' or \'hllc\' For the solver \n for data driven model write \'0\' for schemes, \'1\' for datadriven CNN and \'2\' for FFNN\nFurther provide the approach 0, 1 or 2')
         sys.exit(1)
     else:
         riemann_str = terminal_arguments[2]
@@ -82,16 +82,22 @@ def main(terminal_arguments):
             sys.exit(1)
     data_driven = 0 
     save_dir = "output/numerical/godunov_upwind_results/" + riemann_str
+    approach = 0
+    if not(terminal_arguments[3] == '0'):
+        if not(terminal_arguments[4] == '0' or terminal_arguments[4] == '1' or terminal_arguments[4] == '2'):
+            print('Please specify \'0\', \'1\' or \'2\' as fourth argument. Which data driven approach to use')
+            sys.exit(1)
+        else:
+            approach = int(terminal_arguments[4])
     if (terminal_arguments[3] == '2'):
         data_driven = 2 
-        save_dir = "output/data_driven_riemann/godunov_upwind/ffnn/"
+        save_dir = "output/data_driven/riemann/godunov_approach" + str(approach) + "/ffnn/"
     elif (terminal_arguments[3] == '1'):
         data_driven = 1 
-        save_dir = "output/data_driven_riemann/godunov_upwind/cnn/"
+        save_dir = "output/data_driven/riemann/godunov_approach" + str(approach) + "/cnn/"
     elif not(terminal_arguments[3] == '0'):
         print('Please specify \'0\', \'1\' or \'2\' as third argument. To choose whether or not to use the data driven model\n0: no data driven model\n1: CNN\n2: FFNN')
-        sys.exit(1)
-    (_,_) = entire_domain(os.path.splitext(terminal_arguments[1])[0], save_dir, True, x_len, break_pos, g, cells, riemann_int, riemann_str, tolerance, iterations, t_end, np.array([h_l, u_l, psi_l]), np.array([h_r, u_r, psi_r]), data_driven)
+    (_,_) = entire_domain(os.path.splitext(terminal_arguments[1])[0], save_dir, True, x_len, break_pos, g, cells, riemann_int, riemann_str, tolerance, iterations, t_end, np.array([h_l, u_l, psi_l]), np.array([h_r, u_r, psi_r]), data_driven, approach)
 
 if __name__ == '__main__':
     main(sys.argv)

@@ -17,20 +17,26 @@ def main(terminal_arguments):
     (x_len, break_pos, g, _, tolerance, iterations, t_end, h_l, u_l, psi_l, h_r, u_r, psi_r) = file_manipulation.extract(read_file) 
 
     if not (len(terminal_arguments) == 3):
-        print('Please specify the Riemann solver to use as second argument, and provide no more than 2 arguments (input file, and solver)')
+        print('Please specify the Riemann solver to use as second argument or data_driven, and provide no more than 2 arguments (input file, and solver)\nSecond argument:\n\'exact\'\n\'hllc\'\n\'data-driven\'')
         sys.exit(1)
     else:
-        riemann_str = terminal_arguments[2]
+        riemann_str_data = terminal_arguments[2]
         riemann_int = 0 # 0 = exact, 1 = HLLC
-        if (riemann_str == 'exact'):
+        data_driven = 0 
+        if (riemann_str_data == 'exact'):
             pass
-        elif (riemann_str == 'hllc'):
+        elif (riemann_str_data == 'hllc'):
             riemann_int = 1
+        elif (riemann_str_data == 'data-driven'):
+            data_driven = 2 
         else:
             print('Please specify exact or hllc as third argument. To choose the used riemann solver')
             sys.exit(1)
-    
-    cells_list = [100*2**i for i in range(7)]
+
+    if (data_driven == 2): 
+        cells_list = [100*2**i for i in range(7)]
+    else:
+        cells_list = [100*2**i for i in range(7)]
     delta_x_list = [x_len/cells for cells in cells_list] 
     W_l, W_r = np.array([h_l, u_l, psi_l]), np.array([h_r, u_r, psi_r])
     error_list = [[],[],[]]
@@ -38,7 +44,10 @@ def main(terminal_arguments):
 
     for cells in cells_list:
         start_time = time.time()
-        (U,W) = godunov_upwind.entire_domain("", "", False, x_len, break_pos, g, cells, riemann_int, riemann_str, tolerance, iterations, t_end, W_l, W_r)
+        if (data_driven == 2):
+            (U,W) = godunov_upwind.entire_domain("", "", False, x_len, break_pos, g, cells, riemann_int, riemann_str_data, tolerance, iterations, t_end, W_l, W_r, data_driven, 0)
+        else:
+            (U,W) = godunov_upwind.entire_domain("", "", False, x_len, break_pos, g, cells, riemann_int, riemann_str_data, tolerance, iterations, t_end, W_l, W_r, data_driven, 0)
         end_time = time.time()
         elapsed_time = end_time - start_time
         speed_list.append(elapsed_time)
@@ -51,7 +60,7 @@ def main(terminal_arguments):
                 error_list[i].append(error)
         print('completed cells: ' + str(cells))
     
-    plotter.plot_error_and_speed(speed_list, error_list, delta_x_list, cells_list, os.path.splitext(terminal_arguments[1])[0], "output/speed_and_accuracy/godunov_upwind", "godunov_upwind", riemann_str)
+    plotter.plot_error_and_speed(speed_list, error_list, delta_x_list, cells_list, os.path.splitext(terminal_arguments[1])[0], "output//data_driven/speed_and_accuracy/godunov_upwind", "godunov_upwind", "data_driven")
 
 if __name__ == '__main__':
     main(sys.argv)
