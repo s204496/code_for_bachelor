@@ -1,7 +1,7 @@
 x-length: 50.0
 break-position: 10.0
 gravity: 9.8 
-cells: 6400
+cells: 500
 tolerence: 10e-8
 iteration: 50
 t_end: 7.0
