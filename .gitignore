@@ -4,5 +4,7 @@ __pycache__/
 /SWE/.vscode/
 /exact_riemann_solver/.vscode/
 /SWE/sample_exact_solution/.vscode/
-/SWE/output/*
-!/SWE/output/.gitkeep
+/SWE/data_driven/generated_data/*
+!/SWE/data_driven/generated_data/.gitkeep
+.pytest_cache/
+2x2_constant_coefficients_Riemann_solver.ipynb

@@ -1,5 +1,5 @@
 """ This function extracts the content of a testcase file.
-The input should state the following hyperparameters:
+The input should state the following parameters:
 
 1. x-length: the length of the domain in the x-direction, the domain is always [0,x-length] 
 2. break-position: the position along the x-axis where we have the discountinues change in h and u at t=0

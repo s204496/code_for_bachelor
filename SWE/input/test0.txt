@@ -1,0 +1,13 @@
+x-length: 50.0
+break-position: 20.0
+gravity: 9.8 
+cells: 500
+tolerence: 10e-8
+iteration: 50
+t_end: 4.0
+h_l: 0.6 
+u_l: 2.5
+psi_l: 1.0
+h_r: 1.6 
+u_r: -2.0 
+psi_r: 0.0
