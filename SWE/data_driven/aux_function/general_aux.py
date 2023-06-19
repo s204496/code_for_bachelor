@@ -27,12 +27,10 @@ def load_model(model_path, device, model_type):
 def test(model, test_loader, device, loss_type):
     model.eval()
     test_loss = 0.0
-    if loss_type == 0 or loss_type == 3:
+    if loss_type == 0:
         criterion = nn.MSELoss()
     elif loss_type == 1:
         criterion = riemann_aux.custom_loss() 
-    elif loss_type == 4:
-        criterion = lax_godunov_flux_aux.custom_loss()
 
     with torch.no_grad():
         for inputs, labels in test_loader:

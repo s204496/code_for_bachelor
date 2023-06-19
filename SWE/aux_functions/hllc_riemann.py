@@ -63,14 +63,17 @@ def solve(W_l, W_r, g):
     elif S_r <= 0:
         return (False, W_r, F_r, (h_s, u_s))
     elif S_l <= 0 and S_r >= 0:
-        flux_HLLC_0 = (S_r*F_l[0] - S_l*F_r[0] + S_l*S_r*(W_r[0]-W_l[0]))/(S_r-S_l) 
-        flux_HLLC_1 = (S_r*F_l[1] - S_l*F_r[1] + S_l*S_r*(W_r[0]*W_r[1]-W_l[0]*W_l[1]))/(S_r-S_l)
-        if u_s >= 0: # 10.28 
-            flux_HLLC_2 = flux_HLLC_0 * W_l[2]
-            return (False, np.array([h_s, u_s, W_l[2].item()]), np.array([flux_HLLC_0, flux_HLLC_1, flux_HLLC_2]), (h_s, u_s))
+        S_s = (S_l*W_r[0]*(W_r[1]-S_r) - S_r*W_l[0]*(W_l[1]-S_l))/(W_r[0]*(W_r[1]-S_r) - W_l[0]*(W_l[1]-S_l))
+        if S_s >= 0:
+            U_l = np.array([W_l[0], W_l[0]*W_l[1], W_l[0]*W_l[2]])
+            U_sl = W_l[0]*((S_l-W_l[1])/(S_l-S_s))*np.array([1, S_s, W_l[2]])
+            flux = F_l + S_l*(U_sl-U_l)
+            return (False, np.array([h_s, u_s, W_l[2].item()]), flux, (h_s, u_s)) 
         else:
-            flux_HLLC_2 = flux_HLLC_0 * W_r[2]
-            return (False, np.array([h_s, u_s, W_r[2].item()]), np.array([flux_HLLC_0, flux_HLLC_1, flux_HLLC_2]), (h_s, u_s))
+            U_r = np.array([W_r[0], W_r[0]*W_r[1], W_r[0]*W_r[2]])
+            U_sr = W_r[0]*((S_r-W_r[1])/(S_r-S_s))*np.array([1, S_s, W_r[2]])
+            flux = F_r + S_r*(U_sr-U_r)
+            return (False, np.array([h_s, u_s, W_r[2].item()]), flux, (h_s, u_s))
     print("This should never happen, something went wrong in HLLC_riemann.py") 
     sys.exit(1)
 

@@ -23,9 +23,8 @@ def main(terminal_arguments):
     speed_list = []
 
     for cells in cells_list:
-        cells = np.random.choice(sizes)
         start_time = time.time()
-        (U,W) = lax_friedrich.entire_domain("", "", False, x_len, break_pos, g, cells, tolerance, iterations, t_end, W_l, W_r, False)
+        (U,W) = lax_friedrich.entire_domain("", "", False, x_len, break_pos, g, cells, tolerance, iterations, t_end, W_l, W_r)
         end_time = time.time()
         elapsed_time = end_time - start_time
         speed_list.append(elapsed_time)

@@ -18,7 +18,7 @@ def main(argv):
             samples_str = '200k'
         elif (sample_choice == 2):
             samples = 1600000
-            samples_str = '1.6M'
+            samples_str = '1d6M'
         else:
             print('Please specify the number of samples to generate as first argument\n0: for 25.000 samples\n1: for 200.000 samples\n2: for 1.600.000 samples')
             sys.exit(1)
@@ -36,7 +36,7 @@ def main(argv):
     except:
         print('Please specify the \'exact\' or \'hllc\' as second argument')
         sys.exit(1)
-    print('Generating ' + str(samples) + ' samples for the ' + argv[2] + 'Riemann solver')
+    print('Generating ' + str(samples) + ' samples for the ' + argv[2] + ' Riemann solver')
     # Create an empty DataFrame
     df = pd.DataFrame(columns=['h_l', 'u_l', 'h_r', 'u_r', 'flux_h', 'flux_hu'])
     g = 9.8
