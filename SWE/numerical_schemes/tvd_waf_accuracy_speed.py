@@ -31,6 +31,7 @@ def main(terminal_arguments):
         else:
             print('Please specify exact, hllc or data-driven as third argument. To choose the used riemann solver')
             sys.exit(1)
+
     
     cells_list = [100*2**i for i in range(7)]
     delta_x_list = [x_len/cells for cells in cells_list] 

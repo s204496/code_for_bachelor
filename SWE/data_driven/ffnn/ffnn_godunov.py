@@ -85,10 +85,10 @@ def train(train_loader, val_loader, test_loader, learning_rates, device, maximum
                     print(f"Early stopping at epoch {epoch+1}, with learning rate {learning_rate}")
                     break
             if epoch % 200 == 5:
-                print(f"Epoch: {epoch+1}, Training loss: {avg_train_loss:.4f}, Validation loss: {avg_val_loss:.4f}")
-        print(f"Learning rate: {learning_rate}, with best avg. validation loss of: {local_best_val_loss:.4f}")
-    print(f"Best learning rate: {best_learning_rate}, with avg. validation loss of: {global_best_val_loss:.4f}")
-    print(f'Test error for best validation model: {best_test_error:.4f}')
+                print(f"Epoch: {epoch+1}, Training loss: {avg_train_loss:.5f}, Validation loss: {avg_val_loss:.5f}")
+        print(f"Learning rate: {learning_rate}, with best avg. validation loss of: {local_best_val_loss:.5f}")
+    print(f"Best learning rate: {best_learning_rate}, with avg. validation loss of: {global_best_val_loss:.5f}")
+    print(f'Test error for best validation model: {best_test_error:.5f}')
     return error_pr_epoch_best_lr, best_learning_rate
 
 def main(argv):
@@ -122,8 +122,8 @@ def main(argv):
     # Hyperparameters
     batch_size = 128
     maximum_epochs = 20000
-    learning_rates = [0.003, 0.001, 0.0006, 0.0003, 0.0001]
-    patience = 150
+    learning_rates = [0.0003, 0.0001, 0.00006]
+    patience = 100
     # Create data loaders, train, and test
     train_loader, val_loader, test_loader = general_aux.create_data_loaders_from_csv(('data_driven/generated_data/godunov_flux_' + argv[2] + '_' + samples_str  + '.csv'), batch_size, 'godunov_flux')
     models_train_test_error, best_learning_rate = train(train_loader, val_loader, test_loader, learning_rates, device, maximum_epochs, patience=patience, model_path=('data_driven/models/godunov_flux_' + argv[2] + '_' + samples_str  + '.pt'))
