@@ -4,10 +4,7 @@ __pycache__/
 /SWE/.vscode/
 /exact_riemann_solver/.vscode/
 /SWE/sample_exact_solution/.vscode/
-<<<<<<< HEAD
 /SWE/data_driven/generated_data/*
 !/SWE/data_driven/generated_data/.gitkeep
-=======
->>>>>>> 061a74f8a3499cc3f47624a371b63ab16b6333f7
 .pytest_cache/
 2x2_constant_coefficients_Riemann_solver.ipynb
