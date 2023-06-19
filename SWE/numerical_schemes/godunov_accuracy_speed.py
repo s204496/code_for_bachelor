@@ -21,7 +21,7 @@ def main(terminal_arguments):
         sys.exit(1)
     else:
         riemann_str = terminal_arguments[2]
-        riemann_solver = 0 # 0 = exact, 1 = HLLC, 2 = data-driven
+        riemann_solver = 0 # 0 = exact, 1 = HLLC, 2 = data-driven-riemann, 3=data-driven-flux
         if (riemann_str == 'exact'):
             pass
         elif (riemann_str == 'hllc'):
@@ -33,10 +33,13 @@ def main(terminal_arguments):
         elif (riemann_str == 'data-flux-hllc'):
             riemann_solver = 4
         else:
-            print('Please specify exact or hllc as third argument. To choose the used riemann solver')
+            print('Please specify exact, hllc, data-driven, data-flux-exact or data-flux-hllc as third argument. To choose the used solver')
             sys.exit(1)
 
-    cells_list = [100*2**i for i in range(7)]
+    if (riemann_solver == 2):
+        cells_list = [100*2**i for i in range(8)]
+    else:
+        cells_list = [100*2**i for i in range(7)]
     delta_x_list = [x_len/cells for cells in cells_list] 
     if not(riemann_solver == 3 or riemann_solver == 4):
         W_l, W_r = np.array([h_l, u_l, psi_l]), np.array([h_r, u_r, psi_r])
@@ -61,7 +64,9 @@ def main(terminal_arguments):
         print('completed cells: ' + str(cells))
     
     if (riemann_solver == 2):
-        plotter.plot_error_and_speed(speed_list, error_list, delta_x_list, cells_list, os.path.splitext(terminal_arguments[1])[0], "output/data_driven/speed_and_accuracy/godunov_upwind", "godunov_upwind", "data_driven")
+        plotter.plot_error_and_speed(speed_list, error_list, delta_x_list, cells_list, os.path.splitext(terminal_arguments[1])[0], "output/data_driven/speed_and_accuracy/godunov_upwind", "godunov_upwind", "riemann_data_driven")
+    elif (riemann_solver == 3 or riemann_solver == 4):
+        plotter.plot_error_and_speed(speed_list, error_list, delta_x_list, cells_list, os.path.splitext(terminal_arguments[1])[0], "output/data_driven/speed_and_accuracy/godunov_upwind", "godunov_upwind", "data_driven_flux")
     else:
         # The line below should be changed to generate the old plots
         plotter.plot_error_and_speed(speed_list, error_list, delta_x_list, cells_list, os.path.splitext(terminal_arguments[1])[0], "output/numerical/speed_and_accuracy/godunov_upwind", "godunov_upwind", "numerical solution")

@@ -61,7 +61,7 @@ def plot_fixed_h(h_l, h_r, g):
     plt.show()
   
 def plot_hat_flux_vs_flux(g):
-    model = general_aux.load_model('data_driven/models/Godunov_flux_25_000.pt', 'cpu', 'godunov_flux') # CPU can be changed if one has a Nvidia GPU
+    model = general_aux.load_model('data_driven/models/godunov_flux_exact_200k.pt', 'cpu', 'godunov_flux') # CPU can be changed if one has a Nvidia GPU
     data_input_l = np.zeros((1000, 2))
     data_input_r = np.zeros((1000, 2))
     fluxes = np.zeros((1000,2))
@@ -73,7 +73,7 @@ def plot_hat_flux_vs_flux(g):
         fluxes[i][0], fluxes[i][1] = god_flux(data_input_l[i][0], data_input_l[i][1], data_input_r[i][0], data_input_r[i][1], g)
     hat_fluex = lax_godunov_flux_aux.compute(model, data_input_l, data_input_r)
 
-    _, (ax1, ax2) = plt.subplots(1, 2)
+    _, (ax1, ax2) = plt.subplots(1, 2,figsize=(10, 5))
 
     ax1.scatter(fluxes[:, 0], hat_fluex[:, 0], s=1)
     ax2.scatter(fluxes[:, 1], hat_fluex[:, 1], s=1)

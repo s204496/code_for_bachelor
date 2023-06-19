@@ -139,11 +139,23 @@ def flux_at_boundaries_data_driven_god(W, g, dx, CFL, model):
     # seperate into left and right states for riemann problem
     W_l = W[:-1,:]
     W_r = W[1:,:]
-    # solve all the riemann problems predicting h_s
     flux = np.empty([W.shape[0]-1, 3])
     flux[:,:-1] = lax_godunov_flux_aux.compute(model, W_l[:,0:-1], W_r[:,0:-1])
+    mask_flux = W_l[:,0] <= 10e-8
+    flux[mask_flux,:] = 0
     flux[:,-1] = 0.0 
-    S_max = np.max(np.absolute(W_l[:,1]) + np.sqrt(g*W_l[:,0]))
+    dry_right = W_r[:,0] <= 10e-8
+    W_r[dry_right,:] = 0
+    dry_left = W_l[:,0] <= 10e-8
+    W_l[dry_left,:] = 0
+    not_dry = np.logical_not(np.logical_or(dry_right, dry_left))
+    S_wet = np.max(np.absolute(W_l[not_dry,1]) + np.sqrt(g*W_l[not_dry,0]))
+    S_dry = f.get_dry_speeds_np(W_l[~not_dry & ~dry_left,1], np.sqrt(g*W_l[~not_dry & ~dry_left,0]), W_r[~not_dry & ~dry_right,1], np.sqrt(g*W_r[~not_dry & ~dry_right,0]))
+    if S_dry.size == 0:
+        S_max = S_wet
+    else:
+        dry_max = np.max(np.absolute(S_dry))
+        S_max = np.maximum(S_wet, dry_max)
     delta_t = CFL*dx/S_max
     return (delta_t, flux)
 
@@ -194,8 +206,6 @@ def interface_wave_speeds(W_l, W_r, g, riemann_int, tolenrance, iterations):
             return (9, np.array([W_l[1]-math.sqrt(W_l[0]*g)*f.qk(h_u_s[0], W_l[0]), h_u_s[1],  W_r[1]+math.sqrt(g*W_r[0])]), h_u_s[0], h_u_s[1], W_x)
         else: # Case 10
             return (10, np.array([W_l[1]-math.sqrt(g*W_l[0]), h_u_s[1],  W_r[1]+math.sqrt(g*W_r[0])]), h_u_s[0], h_u_s[1], W_x)
-    print("something went wrong in interface_wave_speeds, this code should never be reached")
-    sys.exit(1)
 
 # This method returns (number of shock/rarefaction waves, list_of_c_for_each_wave, list_of_jump_in_w, list_of_jump_in_flux) 
 def get_c_dw_dflux(S_type, S_array, W_l, W_r, delta_t, delta_x, boundary_flux, boundary_w, h_s, u_s, g):

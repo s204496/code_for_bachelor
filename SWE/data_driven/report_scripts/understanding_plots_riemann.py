@@ -140,7 +140,6 @@ def plot_hat_hs_vs_hs(g):
     # draw line from (0,0) to (7,7)
     plt.show()
 
-
 def main():
     g = 9.8
     # test1

@@ -90,7 +90,12 @@ def plot_error_and_speed(speed_data, error_data, delta_x_list, cells, out_plot_n
             if (scheme == "lax_friedrich"):
                 ax[i][j].set_title("Scheme: Lax Friedrich, " + out_plot_name + ", error of " + temp_str)
             elif (scheme == "godunov_upwind"):     
-                ax[i][j].set_title("Scheme: Godunov upwind, " + out_plot_name + ", " + riemann_str + " solver" + ", error of " + temp_str)
+                if riemann_str == 'riemann_data_driven':
+                    ax[i][j].set_title("Scheme: Godunov upwind, " + out_plot_name + ", FFNN Riemann" + ", error of " + temp_str)
+                elif riemann_str == 'data_driven_flux':
+                    ax[i][j].set_title("Scheme: Godunov upwind, " + out_plot_name + ", FFNN flux" + ", error of " + temp_str)
+                else:
+                    ax[i][j].set_title("Scheme: Godunov upwind, " + out_plot_name + ", " + riemann_str + " solver" + ", error of " + temp_str)
             elif (scheme == "tvd_waf"):     
                 ax[i][j].set_title("Scheme: TVD WAF, " + out_plot_name + ", " + riemann_str + " solver" + ", error of " + temp_str)
             ax[i][j].legend()
