@@ -20,9 +20,9 @@ def entire_domain(out_name, out_dir, bool_plot, x_len, break_pos, g, cells, riem
     dx = x_len/cells
     (U,W) = discritization.discretize_initial_values(dx, cells, break_pos, W_l, W_r)
     if riemann_solver == 2:
-        model = general_aux.load_model('data_driven/models/riemann_FFNN_shallow.pt', 'cpu', 'ffnn_riemann') # CPU can be changed if one has a Nvidia GPU
+        model = general_aux.load_model('data_driven/models/riemann_hllc_200k_FFNN_shallow.pt', 'cpu', 'ffnn_riemann') # CPU can be changed if one has a Nvidia GPU
     elif riemann_solver == 3:
-        model = general_aux.load_model('data_driven/models/godunov_flux_exact_200k.pt', 'cpu', 'godunov_flux') 
+        model = general_aux.load_model('data_driven/models/godunov_flux_exact_200k_done.pt', 'cpu', 'godunov_flux') 
     elif riemann_solver == 4:
         model = general_aux.load_model('data_driven/models/godunov_flux_hllc_200k.pt', 'cpu', 'godunov_flux') 
     CFL = 0.9
@@ -32,7 +32,7 @@ def entire_domain(out_name, out_dir, bool_plot, x_len, break_pos, g, cells, riem
         #calculate the time step
         if riemann_solver == 2:
             (delta_t, fluxes) = discritization.flux_at_boundaries_data_driven_riemann(W, g, cells, dx, CFL, model)
-        if riemann_solver == 3:
+        elif riemann_solver == 3:
             (delta_t, fluxes) = discritization.flux_at_boundaries_data_driven_god(W, g, dx, CFL, model)
         else:
             (delta_t, fluxes) = discritization.flux_at_boundaries(W, g, cells, riemann_solver, dx, tolerance, iterations, CFL)

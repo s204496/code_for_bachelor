@@ -123,7 +123,7 @@ def main(argv):
     batch_size = 128
     maximum_epochs = 25000
     learning_rates = [0.0003, 0.0001, 0.00006]
-    patience = 180
+    patience = 150
     # Create data loaders, train, and test
     train_loader, val_loader, test_loader = general_aux.create_data_loaders_from_csv(('data_driven/generated_data/godunov_flux_' + argv[2] + '_' + samples_str  + '.csv'), batch_size, 'godunov_flux')
     models_train_test_error, best_learning_rate = train(train_loader, val_loader, test_loader, learning_rates, device, maximum_epochs, patience=patience, model_path=('data_driven/models/godunov_flux_' + argv[2] + '_' + samples_str  + '.pt'))

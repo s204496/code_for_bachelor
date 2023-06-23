@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import torch
 from aux_functions import exact_riemann_solver
-from data_driven.aux_function import general_aux, lax_godunov_flux_aux
+from data_driven.aux_function import general_aux, godunov_flux_aux
 
 def god_flux(h_l, u_l, h_r, u_r, g):
     (_, (_, _, _), boundary_flux, _) = exact_riemann_solver.solve(0.0, np.array([h_l,u_l, 0.0]), np.array([h_r,u_r, 0.0]), g, 10E-8, 50)
@@ -71,7 +71,7 @@ def plot_hat_flux_vs_flux(g):
         data_input_r[i][0] = np.random.uniform(0.01, 3)
         data_input_r[i][1] = np.random.uniform(-6, 6)
         fluxes[i][0], fluxes[i][1] = god_flux(data_input_l[i][0], data_input_l[i][1], data_input_r[i][0], data_input_r[i][1], g)
-    hat_fluex = lax_godunov_flux_aux.compute(model, data_input_l, data_input_r)
+    hat_fluex = godunov_flux_aux.compute(model, data_input_l, data_input_r)
 
     _, (ax1, ax2) = plt.subplots(1, 2,figsize=(10, 5))
 

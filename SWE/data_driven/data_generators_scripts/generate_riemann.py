@@ -16,7 +16,7 @@ def main(argv):
             samples_str = '200k'
         elif (sample_choice == 2):
             samples = 1600000
-            samples_str = '1.6M'
+            samples_str = '1d6M'
         else:
             print('Please specify the number of samples to generate as first argument\n0: for 25.000 samples\n1: for 200.000 samples\n2: for 1.600.000 samples')
             sys.exit(1)

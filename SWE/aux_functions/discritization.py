@@ -2,7 +2,7 @@ import math
 import sys
 import numpy as np
 from aux_functions import f,exact_riemann_solver, hllc_riemann
-from data_driven.aux_function import riemann_aux, lax_godunov_flux_aux
+from data_driven.aux_function import godunov_flux_aux, riemann_aux
 
 # Computes the Lax-Friedrichs fluxes at the cell boundaries (see. Toro (9.29) - page 163)
 def flux_lax(W, U, dx, cells, g, dt):
@@ -18,7 +18,7 @@ def flux_lax(W, U, dx, cells, g, dt):
 
 # Computes the Lax-Friedrichs fluxes with data driven method
 def flux_lax_data_driven(W, U, dx, g, dt, model, data_driven_model):
-    fluxes = lax_godunov_flux_aux.compute(model, W[:-1,:], W[1:,:], dx, dt, data_driven_model) 
+    fluxes = godunov_flux_aux.compute(model, W[:-1,:], W[1:,:], dx, dt, data_driven_model) 
     return fluxes 
 
 # Computes the dt for the Lax-friedrichs scheme, not depend on Riemann solvers
@@ -140,7 +140,7 @@ def flux_at_boundaries_data_driven_god(W, g, dx, CFL, model):
     W_l = W[:-1,:]
     W_r = W[1:,:]
     flux = np.empty([W.shape[0]-1, 3])
-    flux[:,:-1] = lax_godunov_flux_aux.compute(model, W_l[:,0:-1], W_r[:,0:-1])
+    flux[:,:-1] = godunov_flux_aux.compute(model, W_l[:,0:-1], W_r[:,0:-1])
     mask_flux = W_l[:,0] <= 10e-8
     flux[mask_flux,:] = 0
     flux[:,-1] = 0.0 

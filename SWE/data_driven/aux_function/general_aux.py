@@ -8,7 +8,7 @@ import sys
 from data_driven.ffnn import ffnn_godunov
 sys.path.append('../SWE')
 from data_driven.cnn import cnn_riemann 
-from data_driven.aux_function import lax_godunov_flux_aux, riemann_aux 
+from data_driven.aux_function import godunov_flux_aux, riemann_aux 
 from data_driven.ffnn import ffnn_godunov, ffnn_riemann
 
 # Load the trained model
@@ -59,9 +59,9 @@ def create_data_loaders_from_csv(path, batch_size, model_type):
             val_dataset = riemann_aux.ffnn_riemann_dataset(val_data)
             test_dataset = riemann_aux.ffnn_riemann_dataset(test_data)
         case 'godunov_flux':
-            train_dataset = lax_godunov_flux_aux.godunov_flux_dataset(train_data)
-            val_dataset = lax_godunov_flux_aux.godunov_flux_dataset(val_data)
-            test_dataset = lax_godunov_flux_aux.godunov_flux_dataset(test_data)
+            train_dataset = godunov_flux_aux.godunov_flux_dataset(train_data)
+            val_dataset = godunov_flux_aux.godunov_flux_dataset(val_data)
+            test_dataset = godunov_flux_aux.godunov_flux_dataset(test_data)
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=batch_size)
     test_loader = DataLoader(test_dataset, batch_size=batch_size)
