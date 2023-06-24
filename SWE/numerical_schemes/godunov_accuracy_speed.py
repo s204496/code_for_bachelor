@@ -36,8 +36,8 @@ def main(terminal_arguments):
             print('Please specify exact, hllc, data-driven, data-flux-exact or data-flux-hllc as third argument. To choose the used solver')
             sys.exit(1)
 
-    if (riemann_solver == 2):
-        cells_list = [100*2**i for i in range(8)]
+    if (riemann_solver == 2 or riemann_solver == 3 or riemann_solver == 4):
+        cells_list = [100*2**i for i in range(12)]
     else:
         cells_list = [100*2**i for i in range(7)]
     delta_x_list = [x_len/cells for cells in cells_list] 

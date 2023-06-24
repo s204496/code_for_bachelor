@@ -55,12 +55,12 @@ def train(train_loader, val_loader, test_loader, learning_rates, device, batch_s
     best_learning_rate = None
     best_lr_l_evalution = [[], []]
     test_loss_best_model = []
+    best_test_error = float('inf')
 
     for learning_rate in learning_rates:
         test_error_pr_epoch = [[],[]]
         early_stopping_counter = 0
         local_best_val_loss = float('inf')
-        best_test_error = float('inf')
 
         if (shallow):
             model = ffnn_riemann_shallow().to(device)

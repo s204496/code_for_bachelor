@@ -11,7 +11,7 @@ def god_flux(h_l, u_l, h_r, u_r, g):
     return boundary_flux[0], boundary_flux[1]
 
 def speed_test(g):
-    model = general_aux.load_model('data_driven/models/godunov_flux_exact_200k_done.pt', 'cpu', 'godunov_flux') # CPU can be changed if one has a Nvidia GPU
+    model = general_aux.load_model('data_driven/models/godunov_flux_exact_1d6M.pt', 'cpu', 'godunov_flux') # CPU can be changed if one has a Nvidia GPU
     number_of_runs_in_test = 10000000
     data_input_l = np.zeros((number_of_runs_in_test, 2))
     data_input_r = np.zeros((number_of_runs_in_test, 2))
