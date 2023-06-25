@@ -121,13 +121,58 @@ def plot_error_and_speed(speed_data, error_data, delta_x_list, cells, out_plot_n
     else:     
         plt.savefig(out_path + '/' + scheme + "_" + out_plot_name + '_' + riemann_str + ".png", dpi=300)
 
+def plot_initial(test_str, out_dir, x_len, break_pos, t_end, cells, h_l, h_r, u_l, u_r, psi_l, psi_r):
+    figure, ax = plt.subplots(1,1)
+    dx = x_len/cells
+    data = np.zeros((cells,3))
+    for i in range (cells):
+        if i*dx < break_pos:
+            data[i][0] = h_l
+            data[i][1] = u_l
+            data[i][2] = psi_l
+        else:
+            data[i][0] = h_r
+            data[i][1] = u_r
+            data[i][2] = psi_r
+    x_center = np.linspace(dx, dx*cells, cells)
+    for i in range(3):
+        variable = ""
+        y_label = ""
+        if i == 0:
+            y_label = "h(x) in m"
+            variable = "h(x)"
+        elif i == 1:
+            y_label = r'u(x) in $\frac{m}{s}$'
+            variable = "u(x)"
+        elif i == 2:
+            y_label = r'$\psi(x)$ in $\frac{g}{m}$'
+            variable = r'$\psi(x)$'
+        if not(i == 2):
+            save_name = variable 
+        else:
+            save_name = "psi(x)"
+        mpl.rcParams['font.size'] = mpl.rcParams['font.size']*0.8 
+        ax.plot(x_center, data[:,i], linewidth=0.5, label=variable)
+        figure.suptitle("Initial condition variable: " + variable + ", for " + test_str)
+        ax.set_ylabel(y_label, fontsize=8)
+        ax.tick_params(axis='y', labelsize=8)
+        ax.set_xlabel("x in m", fontsize=8)
+        ax.tick_params(axis='x', labelsize=8)
+        ax.xaxis.get_label().set_x(0.5)
+        ax.xaxis.get_label().set_y(-0.1)
+        ax.yaxis.get_label().set_x(-0.1)
+        ax.yaxis.get_label().set_y(0.5)
+        plt.legend()
+        figure.subplots_adjust(wspace=0.3, bottom=0.2)
+        plt.savefig(out_dir + '/' + save_name + test_str+ ".png", dpi=300)
+        ax.clear()
 
 # Plotting the results of experiment 1 Riemann solver data driven models
 def plot_experiment_1(models):
     colors = ['blue', 'green', 'red']
     titles = ['avg. MSE - loss', 'avg. Custom + MSE - loss']
 
-    fig, axes = plt.subplots(2, 1, figsize=(8, 12))
+    _, axes = plt.subplots(2, 1, figsize=(8, 12))
 
     model_labels = ['Shallow', 'Deep', 'Custom loss']
 

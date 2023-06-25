@@ -61,7 +61,7 @@ def plot_fixed_h(h_l, h_r, g):
     plt.show()
   
 def plot_hat_flux_vs_flux(g):
-    model = general_aux.load_model('data_driven/models/godunov_flux_exact_200k.pt', 'cpu', 'godunov_flux') # CPU can be changed if one has a Nvidia GPU
+    model = general_aux.load_model('data_driven/models/godunov_flux_exact_1d6M.pt', 'cpu', 'godunov_flux') # CPU can be changed if one has a Nvidia GPU
     data_input_l = np.zeros((1000, 2))
     data_input_r = np.zeros((1000, 2))
     fluxes = np.zeros((1000,2))

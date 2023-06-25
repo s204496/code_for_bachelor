@@ -37,7 +37,7 @@ def main(terminal_arguments):
             sys.exit(1)
 
     if (riemann_solver == 2 or riemann_solver == 3 or riemann_solver == 4):
-        cells_list = [100*2**i for i in range(12)]
+        cells_list = [100*2**i for i in range(10)]
     else:
         cells_list = [100*2**i for i in range(7)]
     delta_x_list = [x_len/cells for cells in cells_list] 
